@@ -8,29 +8,57 @@ html
 
 		script.
 			async function main () {
-				const buttons = await fetch('/api/buttons').then(response => response.json());
+				const buttons = await fetch('/api/buttons')
+					.then(response => response.json())
+					.then(buttons => {
+						return buttons.reduce((buttons, button) => {
+							buttons[button.buttonId] = button;
+							return buttons;
+						}, {});
+					});
 
 				const socket = io();
 
-				socket.on('button-name-updated', function(message){
-					console.log(message);
-				});
-
-				socket.on('button-pressed', function(message){
-					console.log(message);
-				});
-
 				class App extends React.Component {
+					constructor () {
+						super();
+						this.state = {buttonsPressed: {}}
+					}
+
+					componentDidMount () {
+						const {socket} = this.props;
+
+						socket.on('button-name-updated', message => {
+							const {buttons} = this.props;
+
+							console.log(message);
+						});
+
+						socket.on('button-pressed', buttonPress => {
+							const {buttonsPressed} = this.state;
+							const {buttonId, timestamp} = buttonPress;
+							const newButtonsPressed = Object.assign({}, buttonsPressed, {[buttonId]: timestamp});
+							this.setState({buttonsPressed: newButtonsPressed});
+						});
+					}
+
 					render () {
 						const {buttons} = this.props;
-						return React.createElement('ul', {}, 
-							buttons.map((button, i) => React.createElement('li', {key: i}, button.name))
+						const {buttonsPressed} = this.state;
+
+						return React.createElement('div', {}, 
+							Object.values(buttons).map((button, i) => 
+								React.createElement('li', {key: i},
+									React.createElement('span', {}, button.name),
+									React.createElement('span', {}, buttonsPressed[button.buttonId])
+								)
+							)
 						);
 					}
 				}
 
 				const mainElement = document.querySelector('.main');
 				
-				ReactDOM.render(React.createElement(App, {buttons}), mainElement);
+				ReactDOM.render(React.createElement(App, {socket, buttons}), mainElement);
 			}
 			main();
