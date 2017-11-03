@@ -1,9 +1,15 @@
 html
 	head
 		style.
-			.buttons {list-style-type: none; padding: 0;}
-			.button {margin: 1rem; padding: 1rem; background-color: #eee; text-align: center;}
-			.button__name {font-size: 2rem; font-family: arial;}
+			body {margin: 0}
+			.main {background-color: #34495E; height: 100%}
+			.buttons {list-style-type: none; padding: 2rem}
+			.button {margin: 2rem; padding: 1rem; background-color: #95A5A6; text-align: center; border-radius: 4px;}
+			.button__name {font-family: arial; color: #fff;}
+			.button:nth-child(1) { font-size: 8rem; background-color: #D80505;}
+			.button:nth-child(2) { font-size: 4rem; margin: 2rem 4rem; }
+			.button:nth-child(3) { font-size: 2rem; margin: 2rem 8rem; }
+			.button:nth-child(n+4) { font-size: 1rem; margin: 2rem 16rem; }
 	body
 		main.main
 		script(src="/socket.io/socket.io.js")
