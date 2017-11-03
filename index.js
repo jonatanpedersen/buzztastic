@@ -31,7 +31,7 @@ async function main () {
 
 			await buttons.insert(button);
 
-			res.json(button);
+			res.json({buttonId, name});
 		}));
 
 		app.post('/api/buttons/:buttonId/presses', callbackify(async (req, res) => {
