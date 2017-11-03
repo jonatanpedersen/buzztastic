@@ -12,6 +12,7 @@ async function main () {
 		const buttons = db.collection('buttons');
 
 		const app = express();
+		app.set('view engine', 'pug');
 		app.use(bodyParser.json());
 
 		const server = http.Server(app);
@@ -30,7 +31,7 @@ async function main () {
 
 			await buttons.insert(button);
 
-			res.status(204).end();
+			res.json(button);
 		}));
 
 		app.post('/api/buttons/:buttonId/presses', callbackify(async (req, res) => {
