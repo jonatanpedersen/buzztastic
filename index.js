@@ -2,14 +2,20 @@ const express = require('express');
 const {MongoClient} = require('mongodb');
 const {callbackify} = require('util');
 const bodyParser = require('body-parser');
+const http = require('http');
+const socketIo = require('socket.io');
 
 async function main () {
 	try {
-		const app = express();
-		app.use(bodyParser.json());
 		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
 		const db = await MongoClient.connect(mongodbConnectionString);
 		const buttons = db.collection('buttons');
+
+		const app = express();
+		app.use(bodyParser.json());
+
+		const server = http.Server(app);
+		const io = socketIo(server);
 
 		app.get('/api/buttons', callbackify(async (req, res) => {
 			const _buttons = await buttons.find({}, {_id: 0, buttonId: 1, name: 1}).toArray();
@@ -46,7 +52,8 @@ async function main () {
 		})
 
 		const port = process.env.PORT || 1432;
-		app.listen(port, () => {
+
+		server.listen(port, () => {
 			console.info(`Listening on port ${port}`);
 		});
 	}
