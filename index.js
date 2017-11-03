@@ -36,7 +36,7 @@ async function main () {
 
 			await buttons.insert(button);
 
-			io.emit('button-name-updated', {buttonId}, { for: 'everyone' });
+			io.emit('button-added', {buttonId, name}, { for: 'everyone' });
 
 			res.json({buttonId, name});
 		}));

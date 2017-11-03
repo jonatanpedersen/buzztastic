@@ -33,12 +33,12 @@ html
 					componentDidMount () {
 						const {socket} = this.props;
 
-						socket.on('button-name-updated', buttonNameUpdated => {
+						socket.on('button-added', buttonNameUpdated => {
 							const {buttons} = this.props;
 							const {buttonId, name} = buttonNameUpdated;
 
 							this.setState({
-								buttons: Object.assign({}, buttons, {[buttonId]: Object.assign({}, buttons[buttonId], {name})})
+								buttons: Object.assign({}, buttons, {[buttonId]: {buttonId, name})
 							});
 						});
 
