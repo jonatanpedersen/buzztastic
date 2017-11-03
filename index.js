@@ -4,6 +4,7 @@ const {callbackify} = require('util');
 const bodyParser = require('body-parser');
 const http = require('http');
 const socketIo = require('socket.io');
+const {v4} = require('uuid');
 
 async function main () {
 	try {
@@ -18,32 +19,41 @@ async function main () {
 		const server = http.Server(app);
 		const io = socketIo(server);
 
+		app.get('/', callbackify(async (req, res) => {
+			res.render('index');
+		}));
+
 		app.get('/api/buttons', callbackify(async (req, res) => {
 			const _buttons = await buttons.find({}, {_id: 0, buttonId: 1, name: 1}).toArray();
 
 			res.json(_buttons);
 		}));
 
-		app.put('/api/buttons/:buttonId', callbackify(async (req, res) => {
-			const {buttonId} = req.params;
+		app.post('/api/buttons', callbackify(async (req, res) => {
+			const {buttonId} = v4();
 			const {name} = req.body;
 			const button = {buttonId, name, presses: []};
 
 			await buttons.insert(button);
+
+			io.emit('button-name-updated', {buttonId}, { for: 'everyone' });
 
 			res.json({buttonId, name});
 		}));
 
 		app.post('/api/buttons/:buttonId/presses', callbackify(async (req, res) => {
 			const {buttonId} = req.params;
+			const timestamp = new Date();
 
 			await buttons.updateOne({buttonId}, {
 				$push: {
 					presses: {
-						timestamp: new Date()
+						timestamp
 					}
 				}
 			});
+
+			io.emit('button-pressed', {buttonId, timestamp}, { for: 'everyone' });
 
 			res.status(204).end();
 		}));

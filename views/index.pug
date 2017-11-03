@@ -1,0 +1,35 @@
+html
+	body
+		main.main
+		script(src="/socket.io/socket.io.js")
+		script(src="https://cdnjs.cloudflare.com/ajax/libs/react/16.0.0/umd/react.development.js")
+		script(crossorigin src="https://unpkg.com/react@16/umd/react.development.js")
+		script(crossorigin src="https://unpkg.com/react-dom@16/umd/react-dom.development.js")
+
+		script.
+			async function main () {
+				const buttons = await fetch('/api/buttons').then(response => response.json());
+
+				const socket = io();
+
+				socket.on('button-name-updated', function(message){
+					console.log(message);
+				});
+
+				socket.on('button-pressed', function(message){
+					console.log(message);
+				});
+			}
+
+			class App extends React.Component {
+				render () {
+					const {buttons} = this.props;
+					return React.createElement('ul', buttons.map(button => React.createElement('li', button.name)));
+				}
+			}
+
+			const mainElement = document.querySelector('.main');
+			
+			ReactDOM.render(React.createElement(App, {buttons}), mainElement);
+
+			main();
