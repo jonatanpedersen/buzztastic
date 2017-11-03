@@ -40,15 +40,6 @@ html
 					componentDidMount () {
 						const {socket} = this.props;
 
-						socket.on('button-added', buttonNameUpdated => {
-							const {buttons} = this.props;
-							const {buttonId, name} = buttonNameUpdated;
-
-							this.setState({
-								buttons: Object.assign({}, buttons, {[buttonId]: {buttonId, name}})
-							});
-						});
-
 						socket.on('button-pressed', buttonPress => {
 							const {buttonsPressed} = this.state;
 							const {buttonId, timestamp} = buttonPress;
@@ -63,16 +54,24 @@ html
 
 							this.setState({buttonsPressed: Object.assign({}, buttonsPressed, {[buttonId]: pressCount})});
 						});
+
+						socket.on('round-created', roundCreated => {
+							console.log('round-created');
+							this.setState({buttonsPressed: {}});
+						});
 					}
 
 					render () {
 						const {buttons} = this.props;
 						const {buttonsPressed} = this.state;
 
-						return React.createElement('ul', {className: 'buttons'}, 
-							Object.entries(buttonsPressed).map(entry => 
-								React.createElement('li', {className: 'button animated bounceIn', key: entry[0]},
-									React.createElement('span', {className: 'button__name'}, buttons[entry[0]].name),
+						return React.createElement('div', {},
+							React.createElement('button', {className: 'new-round-button', onClick: () => fetch('/api/rounds', {method: 'POST'})}, 'New Round'),
+							React.createElement('ul', {className: 'buttons'}, 
+								Object.entries(buttonsPressed).map(entry => 
+									React.createElement('li', {className: 'button animated bounceIn', key: entry[0]},
+										React.createElement('span', {className: 'button__name'}, buttons[entry[0]].name),
+									)
 								)
 							)
 						);
