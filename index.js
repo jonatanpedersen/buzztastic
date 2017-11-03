@@ -9,11 +9,12 @@ async function main () {
 		app.use(bodyParser.json());
 		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
 		const db = await MongoClient.connect(mongodbConnectionString);
+		const buttons = db.collection('buttons');
 
 		app.get('/api/buttons', callbackify(async (req, res) => {
-			const buttons = await db.collections('buttons').find({}, {_id: 0, buttonId: 1, name: 1}).toArray();
+			const _buttons = buttons.find({}, {_id: 0, buttonId: 1, name: 1}).toArray();
 
-			res.json(buttons);
+			res.json(_buttons);
 		}));
 
 		app.put('/api/buttons/:buttonId', callbackify(async (req, res) => {
@@ -21,7 +22,7 @@ async function main () {
 			const {name} = req.body;
 			const button = {buttonId, name, presses: []};
 
-			await db.collections('buttons').insert(button);
+			await buttons.insert(button);
 
 			res.json(button);
 		}));
@@ -29,7 +30,7 @@ async function main () {
 		app.post('/api/buttons/:buttonId/presses', callbackify(async (req, res) => {
 			const {buttonId} = req.params;
 
-			await db.collections('buttons').updateOne({buttonId}, {
+			await buttons.updateOne({buttonId}, {
 				$push: {
 					presses: {
 						timestamp: new Date()
