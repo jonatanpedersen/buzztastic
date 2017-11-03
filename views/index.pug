@@ -1,4 +1,9 @@
 html
+	head
+		style.
+			.buttons {list-style-type: none}
+			.button {margin: 1rem; padding: 1rem; background-color: #eee}
+			.button__name {font-size: 2rem;}
 	body
 		main.main
 		script(src="/socket.io/socket.io.js")
@@ -37,8 +42,16 @@ html
 						socket.on('button-pressed', buttonPress => {
 							const {buttonsPressed} = this.state;
 							const {buttonId, timestamp} = buttonPress;
-							const newButtonsPressed = Object.assign({}, buttonsPressed, {[buttonId]: timestamp});
-							this.setState({buttonsPressed: newButtonsPressed});
+
+							const buttonPressed = buttonsPressed[buttonId];
+
+							if (buttonPressed !== undefined) {
+								return;
+							}
+
+							const pressCount = Object.keys(buttonsPressed).length + 1;
+
+							this.setState({buttonsPressed: Object.assign({}, buttonsPressed, {[buttonId]: pressCount})});
 						});
 					}
 
@@ -46,11 +59,10 @@ html
 						const {buttons} = this.props;
 						const {buttonsPressed} = this.state;
 
-						return React.createElement('div', {}, 
-							Object.values(buttons).map((button, i) => 
-								React.createElement('li', {key: i},
-									React.createElement('span', {}, button.name),
-									React.createElement('span', {}, buttonsPressed[button.buttonId])
+						return React.createElement('ul', {className: 'buttons'}, 
+							Object.entries(buttonsPressed).map(entry => 
+								React.createElement('li', {className: 'button', key: entry[0]},
+									React.createElement('span', {className: 'button__name'}, buttons[entry[0]].name),
 								)
 							)
 						);
