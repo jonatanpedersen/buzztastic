@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const http = require('http');
 const socketIo = require('socket.io');
 const {v4} = require('uuid');
+const compression = require('compression');
 
 async function main () {
 	try {
@@ -14,16 +15,12 @@ async function main () {
 		const rounds = db.collection('rounds');
 
 		const app = express();
+		app.use(compression());
 		app.use(express.static('public'));
-		app.set('view engine', 'pug');
 		app.use(bodyParser.json());
 
 		const server = http.Server(app);
 		const io = socketIo(server);
-
-		app.get('/', callbackify(async (req, res) => {
-			res.render('index');
-		}));
 
 		app.get('/api/rounds/current', callbackify(async (req, res) => {
 			const round = await rounds.find({}).sort({timestamp: -1 }).limit(1).toArray().then(rounds => rounds.shift());
