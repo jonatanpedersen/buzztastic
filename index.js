@@ -12,7 +12,7 @@ async function main () {
 		const buttons = db.collection('buttons');
 
 		app.get('/api/buttons', callbackify(async (req, res) => {
-			const _buttons = buttons.find({}, {_id: 0, buttonId: 1, name: 1}).toArray();
+			const _buttons = await buttons.find({}, {_id: 0, buttonId: 1, name: 1}).toArray();
 
 			res.json(_buttons);
 		}));
