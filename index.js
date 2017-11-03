@@ -11,7 +11,7 @@ async function main () {
 		const db = await MongoClient.connect(mongodbConnectionString);
 
 		app.get('/api/buttons', callbackify(async (req, res) => {
-			const buttons = await db.find({}, {_id: 0, buttonId: 1, name: 1}).toArray();
+			const buttons = await db.collections('buttons').find({}, {_id: 0, buttonId: 1, name: 1}).toArray();
 
 			res.json(buttons);
 		}));
@@ -21,7 +21,7 @@ async function main () {
 			const {name} = req.body;
 			const button = {buttonId, name, presses: []};
 
-			await db.insert(button);
+			await db.collections('buttons').insert(button);
 
 			res.json(button);
 		}));
@@ -29,7 +29,7 @@ async function main () {
 		app.post('/api/buttons/:buttonId/presses', callbackify(async (req, res) => {
 			const {buttonId} = req.params;
 
-			await db.updateOne({buttonId}, {
+			await db.collections('buttons').updateOne({buttonId}, {
 				$push: {
 					presses: {
 						timestamp: new Date()
