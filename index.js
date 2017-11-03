@@ -24,7 +24,7 @@ async function main () {
 
 			await buttons.insert(button);
 
-			res.json(button);
+			res.status(204).end();
 		}));
 
 		app.post('/api/buttons/:buttonId/presses', callbackify(async (req, res) => {
@@ -37,6 +37,8 @@ async function main () {
 					}
 				}
 			});
+
+			res.status(204).end();
 		}));
 
 		app.use((err, req, res, next) => {
