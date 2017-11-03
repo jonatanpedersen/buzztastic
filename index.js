@@ -7,7 +7,7 @@ async function main () {
 	try {
 		const app = express();
 		app.use(bodyParser.json());
-		const mongodbConnectionString = process.env.MONGODB_CONNECTION_STRING || 'mongodb://localhost/buzztastic';
+		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
 		const db = await MongoClient.connect(mongodbConnectionString);
 
 		app.get('/api/buttons', callbackify(async (req, res) => {
