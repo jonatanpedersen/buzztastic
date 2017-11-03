@@ -1,16 +1,16 @@
-const express = require('express');
-const {MongoClient} = require('mongodb');
-const {callbackify} = require('util');
-const bodyParser = require('body-parser');
-const http = require('http');
-const socketIo = require('socket.io');
-const {v4} = require('uuid');
-const compression = require('compression');
+import express from 'express';
+import mongodb from 'mongodb';
+import util from 'util';
+import bodyParser from 'body-parser';
+import http from 'http';
+import socketIo from 'socket.io';
+import v4 from 'uuid';
+import compression from 'compression';
 
 async function main () {
 	try {
 		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
-		const db = await MongoClient.connect(mongodbConnectionString);
+		const db = await mongodb.MongoClient.connect(mongodbConnectionString);
 		const buttons = db.collection('buttons');
 		const rounds = db.collection('rounds');
 
@@ -22,14 +22,14 @@ async function main () {
 		const server = http.Server(app);
 		const io = socketIo(server);
 
-		app.get('/api/rounds/current', callbackify(async (req, res) => {
+		app.get('/api/rounds/current', util.callbackify(async (req, res) => {
 			const round = await rounds.find({}).sort({timestamp: -1 }).limit(1).toArray().then(rounds => rounds.shift());
 
 			res.json(round);
 		}));
 
-		app.post('/api/rounds', callbackify(async (req, res) => {
-			const roundId = v4();
+		app.post('/api/rounds', util.callbackify(async (req, res) => {
+			const roundId = uuid.v4();
 			const timestamp = new Date();
 			const round = {roundId, timestamp, presses: []};
 
@@ -40,7 +40,7 @@ async function main () {
 			res.json({roundId});
 		}));
 
-		app.post('/api/rounds/current/buttons/:buttonId/presses', callbackify(async (req, res) => {
+		app.post('/api/rounds/current/buttons/:buttonId/presses', util.callbackify(async (req, res) => {
 			const {buttonId} = req.params;
 			const timestamp = new Date();
 
@@ -61,13 +61,13 @@ async function main () {
 			res.status(204).end();
 		}));
 
-		app.get('/api/buttons', callbackify(async (req, res) => {
+		app.get('/api/buttons', util.callbackify(async (req, res) => {
 			const _buttons = await buttons.find({}, {_id: 0, buttonId: 1, name: 1}).toArray();
 
 			res.json(_buttons);
 		}));
 
-		app.post('/api/buttons', callbackify(async (req, res) => {
+		app.post('/api/buttons', util.callbackify(async (req, res) => {
 			const buttonId = v4();
 			const {name} = req.body;
 			const button = {buttonId, name, presses: []};

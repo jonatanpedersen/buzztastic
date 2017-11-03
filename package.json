@@ -2,9 +2,9 @@
   "name": "buzztastic",
   "version": "1.0.0",
   "description": "",
-  "main": "src/server",
+  "main": "src/server/index.mjs",
   "scripts": {
-    "start": "node --harmony .",
+    "start": "node --harmony --experimental-modules .",
     "build": "webpack -p",
     "build-watch": "webpack -d --watch"
   },
