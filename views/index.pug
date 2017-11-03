@@ -19,17 +19,18 @@ html
 				socket.on('button-pressed', function(message){
 					console.log(message);
 				});
-			}
 
-			class App extends React.Component {
-				render () {
-					const {buttons} = this.props;
-					return React.createElement('ul', buttons.map(button => React.createElement('li', button.name)));
+				class App extends React.Component {
+					render () {
+						const {buttons} = this.props;
+						return React.createElement('ul', {}, 
+							buttons.map((button, i) => React.createElement('li', {key: i}, button.name))
+						);
+					}
 				}
+
+				const mainElement = document.querySelector('.main');
+				
+				ReactDOM.render(React.createElement(App, {buttons}), mainElement);
 			}
-
-			const mainElement = document.querySelector('.main');
-			
-			ReactDOM.render(React.createElement(App, {buttons}), mainElement);
-
 			main();
