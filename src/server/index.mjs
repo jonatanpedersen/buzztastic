@@ -4,7 +4,7 @@ import util from 'util';
 import bodyParser from 'body-parser';
 import http from 'http';
 import socketIo from 'socket.io';
-import v4 from 'uuid';
+import uuid from 'uuid';
 import compression from 'compression';
 
 async function main () {
