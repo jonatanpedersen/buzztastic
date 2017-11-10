@@ -68,7 +68,7 @@ async function main () {
 		}));
 
 		app.post('/api/buttons', util.callbackify(async (req, res) => {
-			const buttonId = v4();
+			const buttonId = uuid.v4();
 			const {name} = req.body;
 			const button = {buttonId, name, presses: []};
 
