@@ -1,4 +1,4 @@
-.button {
+.btn {
 	background-color: #4CAF50; /* Green */
     border: none;
     color: white;
@@ -8,10 +8,15 @@
     display: inline-block;
     font-size: 16px;
     margin: 4px 2px;
-    cursor: pointer;
+	cursor: pointer;
+	border-radius: 4px;
+}
+.btn a {
+	color: white;
+	text-decoration: none;
 }
 
-.button--blue {background-color: #008CBA;}
-.button--red {background-color: #f44336;}
-.button--grey {background-color: #e7e7e7; color: black;}
-.button--black {background-color: #555555;}
+.btn--blue {background-color: #008CBA;}
+.btn--red {background-color: #f44336;}
+.btn--grey {background-color: #e7e7e7; color: black;}
+.btn--black {background-color: #555555;}
