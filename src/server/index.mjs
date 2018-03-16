@@ -171,25 +171,51 @@ async function main () {
 
 		app.post('/api/quizes/:quizId/rounds/current/buzzes', util.callbackify(async (req, res) => {
 			const { quiz } = res.locals;
-			const { currentRoundId } = quiz;
+			const { currentRoundId, rounds } = quiz;
 			const { quizId } = req.params;
 			const { playerId, teamId } = req.body;
 
 			const buzzId = uuid.v4();
-			const roundId = currentRoundId
+			const roundId = currentRoundId;
+			const roundIndex = rounds.findIndex(round => round.roundId === roundId);
 			const created = new Date();
 
-			const buzz = {
-				buzzId,
-				playerId,
-				teamId,
-				created
+			const query = { 
+				quizId,
+				teams: {
+					$elemMatch: {
+						teamId
+					}
+				},
+				players: {
+					$elemMatch: {
+						playerId,
+						teamId
+					}
+				},
+				[`rounds.${roundIndex}.buzzes`]: {
+					$not: {
+						$elemMatch: {
+							playerId
+						}
+					}
+				} 
 			};
 
-			await quizes.updateOne(
-				{ quizId, 'rounds.roundId': roundId, 'teams.teamId': teamId, 'players.playerId': playerId, 'rounds.buzzes.playerId': { $ne: playerId } },
-				{ $addToSet: { 'rounds.$.buzzes': buzz } }
-			).then(throwIfNotUpdated);
+			const update = { 
+				$addToSet: {
+					[`rounds.${roundIndex}.buzzes`]: {
+						buzzId,
+						playerId,
+						teamId,
+						created
+					} 
+				} 
+			};
+
+			console.log(JSON.stringify({quiz, query, update}, null, 4));
+
+			await quizes.updateOne(query, update).then(throwIfNotUpdated);
 
 			io.emit('quiz.round.buzzes.created', { quizId, roundId, buzzId }, { for: 'everyone' });
 
@@ -214,6 +240,7 @@ async function main () {
 		}));
 
 		app.use((err, req, res, next) => {
+			console.error(err);
 			res.status(err.code || 500).end();
 		})
 
