@@ -56,6 +56,8 @@ async function main () {
 				created
 			};
 
+			const updated = new Date();
+
 			await quizes.updateOne({ quizId }, {
 				$push: {
 					players: player
@@ -81,11 +83,12 @@ async function main () {
 			};
 
 			await quizes.updateOne(
-				{ quizId, 'player.playerId': playerId },
+				{ quizId, 'players.playerId': playerId },
 				{ $set: { 
-					'players.$.name' : name,
-					'players.$.teamId' : teamId,
-					'players.$.updated' : updated 
+						'players.$.name' : name,
+						'players.$.teamId' : teamId,
+						'players.$.updated' : updated,
+						updated,
 				} }
 			);
 
@@ -99,16 +102,12 @@ async function main () {
 
 			const updated = new Date();
 
-			const player = {
-				playerId,
-				name,
-				teamId,
-				updated
-			};
-
 			await quizes.updateOne(
-				{ quizId, 'player.playerId': playerId },
-				{ $pull: { players: { playerId } } },
+				{ quizId, 'players.playerId': playerId },
+				{ 
+					$pull: { players: { playerId } },
+					$set: { updated } 
+				},
 			);
 
 			io.emit('quiz.player.deleted', { quizId, playerId }, { for: 'everyone' });
@@ -125,14 +124,12 @@ async function main () {
 
 			const team = {
 				quizId,
-				code,
+				name,
 				created
 			};
 
 			await quizes.updateOne({ quizId }, {
-				$push: {
-					teams: team
-				}
+				$push: { teams: team }
 			});
 
 			io.emit('quiz.team.created', { quizId, teamId }, { for: 'everyone' });
@@ -184,8 +181,9 @@ async function main () {
 			res.json({ quizId, roundId, buzzId });
 		}));
 
-		app.get('/api/quiezes/:quizId', util.callbackify(async (req, res) => {
-			const quiz = await quizes.find({ quizId });
+		app.get('/api/quizes/:quizId', util.callbackify(async (req, res) => {
+			const { quizId } = req.params;
+			const quiz = await quizes.findOne({ quizId });
 
 			res.json(quiz);
 		}));
