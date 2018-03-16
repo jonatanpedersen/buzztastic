@@ -8,7 +8,7 @@ import {
 } from 'react-router-dom'
 
 import Home from './Home'
-import StartQuiz from './Quiz';
+import StartQuiz from './StartQuiz';
 
 export default class App extends Component {
 	render() {
