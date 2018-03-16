@@ -1,7 +1,7 @@
 import React from 'react';
 export default () => {
 	return (
-		<section>
+		<section class="section--home">
 			<div className="jumbotron">
 				<h1 className="display-3">Landing page</h1>
 			</div>

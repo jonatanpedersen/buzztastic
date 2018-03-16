@@ -20,7 +20,7 @@ export default class App extends Component {
 							<li><Link to="/">Home</Link></li>
 						</ul> */}
 						<Route exact={true} path="/" component={Home} />
-						<Route path="" component={StartQuiz} />
+						<Route path="/start-quiz" component={StartQuiz} />
 						{/* <Route path="/hello" component={Hello} /> */}
 					</div>
 				</div>
