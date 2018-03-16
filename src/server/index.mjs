@@ -161,7 +161,7 @@ async function main () {
 
 		app.post('/api/quizes/:quizId/rounds/:roundId/buzzes', util.callbackify(async (req, res) => {
 			const { quizId, roundId } = req.params;
-			const { playerId } = req.body;
+			const { playerId, teamId } = req.body;
 
 			const buzzId = uuid.v4();
 			const created = new Date();
@@ -169,11 +169,12 @@ async function main () {
 			const buzz = {
 				buzzId,
 				playerId,
+				teamId,
 				created
 			};
 
 			await quizes.updateOne(
-				{ quizId, 'rounds.roundId': roundId, 'rounds.buzzes.playerId': {$ne: playerId} },
+				{ quizId, 'rounds.roundId': roundId, 'players.teamId': teamId, 'players.playerId': playerId, 'rounds.buzzes.playerId': { $ne: playerId } },
 				{ $addToSet: { 'rounds.$.buzzes': buzz } }
 			).then(throwIfNotUpdated);
 
