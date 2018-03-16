@@ -5,6 +5,7 @@
   "main": "src/server/index.mjs",
   "scripts": {
     "start": "node --harmony --experimental-modules .",
+    "app": "nodemon --harmony --experimental-modules .",
     "build": "webpack -p",
     "build-watch": "webpack -d --watch"
   },
@@ -23,6 +24,7 @@
     "compression": "1.7.2",
     "express": "4.16.3",
     "mongodb": "2.2.33",
+    "nodemon": "^1.17.2",
     "socket.io": "2.0.4",
     "uuid": "3.2.1"
   },
