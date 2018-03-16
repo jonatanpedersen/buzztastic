@@ -25,6 +25,7 @@
     "express": "4.16.3",
     "mongodb": "2.2.33",
     "nodemon": "^1.17.2",
+    "shortid": "2.2.8",
     "socket.io": "2.0.4",
     "uuid": "3.2.1"
   },
