@@ -8,7 +8,7 @@ import {
 } from 'react-router-dom'
 
 import Home from './Home'
-import Quiz from './Quiz';
+import StartQuiz from './Quiz';
 
 export default class App extends Component {
 	render() {
@@ -20,7 +20,7 @@ export default class App extends Component {
 							<li><Link to="/">Home</Link></li>
 						</ul> */}
 						<Route exact path="/" component={Home} />
-						<Route path="/quiz" component={Quiz} />
+						<Route path="/start-quiz" component={StartQuiz} />
 						{/* <Route path="/hello" component={Hello} /> */}
 					</div>
 				</div>
