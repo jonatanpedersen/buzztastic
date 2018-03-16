@@ -42,6 +42,15 @@ async function main () {
 			res.json({ quizId });
 		}));
 
+		app.param('quizId', async (req, res, next, quizId) => {
+			try {
+				res.locals.quiz = await quizes.findOne({quizId});
+				next();
+			} catch(err) {
+				next(err);
+			}
+		});
+
 		app.post('/api/quizes/:quizId/players', util.callbackify(async (req, res) => {
 			const { quizId } = req.params;
 			const { name, teamId } = req.body;
@@ -123,7 +132,7 @@ async function main () {
 			const created = new Date();
 
 			const team = {
-				quizId,
+				teamId,
 				name,
 				created
 			};
@@ -151,7 +160,8 @@ async function main () {
 			await quizes.updateOne({ quizId }, {
 				$push: {
 					rounds: round
-				}
+				},
+				$set: { currentRoundId: roundId }
 			}).then(throwIfNotUpdated);
 
 			io.emit('quiz.round.created', { quizId, roundId }, { for: 'everyone' });
@@ -159,11 +169,14 @@ async function main () {
 			res.json({ quizId, roundId });
 		}));
 
-		app.post('/api/quizes/:quizId/rounds/:roundId/buzzes', util.callbackify(async (req, res) => {
-			const { quizId, roundId } = req.params;
+		app.post('/api/quizes/:quizId/rounds/current/buzzes', util.callbackify(async (req, res) => {
+			const { quiz } = res.locals;
+			const { currentRoundId } = quiz;
+			const { quizId } = req.params;
 			const { playerId, teamId } = req.body;
 
 			const buzzId = uuid.v4();
+			const roundId = currentRoundId
 			const created = new Date();
 
 			const buzz = {
@@ -174,7 +187,7 @@ async function main () {
 			};
 
 			await quizes.updateOne(
-				{ quizId, 'rounds.roundId': roundId, 'players.teamId': teamId, 'players.playerId': playerId, 'rounds.buzzes.playerId': { $ne: playerId } },
+				{ quizId, 'rounds.roundId': roundId, 'teams.teamId': teamId, 'players.playerId': playerId, 'rounds.buzzes.playerId': { $ne: playerId } },
 				{ $addToSet: { 'rounds.$.buzzes': buzz } }
 			).then(throwIfNotUpdated);
 
