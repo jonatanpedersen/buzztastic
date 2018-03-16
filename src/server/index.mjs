@@ -62,7 +62,7 @@ async function main () {
 				$push: {
 					players: player
 				}
-			});
+			}).then(throwIfNotUpdated);
 
 			io.emit('quiz.player.created', { quizId, playerId }, { for: 'everyone' });
 
@@ -90,7 +90,7 @@ async function main () {
 						'players.$.updated' : updated,
 						updated,
 				} }
-			);
+			).then(throwIfNotUpdated);
 
 			io.emit('quiz.player.updated', { quizId, playerId }, { for: 'everyone' });
 
@@ -108,7 +108,7 @@ async function main () {
 					$pull: { players: { playerId } },
 					$set: { updated } 
 				},
-			);
+			).then(throwIfNotUpdated);
 
 			io.emit('quiz.player.deleted', { quizId, playerId }, { for: 'everyone' });
 
@@ -130,7 +130,7 @@ async function main () {
 
 			await quizes.updateOne({ quizId }, {
 				$push: { teams: team }
-			});
+			}).then(throwIfNotUpdated);
 
 			io.emit('quiz.team.created', { quizId, teamId }, { for: 'everyone' });
 
@@ -152,7 +152,7 @@ async function main () {
 				$push: {
 					rounds: round
 				}
-			});
+			}).then(throwIfNotUpdated);
 
 			io.emit('quiz.round.created', { quizId, roundId }, { for: 'everyone' });
 
@@ -173,9 +173,9 @@ async function main () {
 			};
 
 			await quizes.updateOne(
-				{ quizId, 'rounds.roundId': roundId },
-				{ $push: { 'rounds.$.buzzes': buzz } }
-			);
+				{ quizId, 'rounds.roundId': roundId, 'rounds.buzzes.playerId': {$ne: playerId} },
+				{ $addToSet: { 'rounds.$.buzzes': buzz } }
+			).then(throwIfNotUpdated);
 
 			io.emit('quiz.round.buzzes.created', { quizId, roundId, buzzId }, { for: 'everyone' });
 
@@ -199,9 +199,8 @@ async function main () {
 			res.json({ quizId });
 		}));
 
-
 		app.use((err, req, res, next) => {
-			res.status(500).json({err: err.message});
+			res.status(err.code || 500).end();
 		})
 
 		const port = process.env.PORT || 1432;
@@ -216,5 +215,26 @@ async function main () {
 		process.exit(1);
 	}
 }
+
+async function throwIfNotUpdated (doc) {
+	if (doc.modifiedCount === 0) {
+		throw new BadRequestHttpError();
+	}
+}
+
+class HttpError extends Error {
+	constructor (code) {
+		super();
+		this.code = code;
+	}
+}
+
+class BadRequestHttpError extends HttpError {
+	constructor (code) {
+		super(400);
+	}	
+}
+
+
 
 main();
