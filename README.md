@@ -121,3 +121,36 @@
 ```
 
 ### Delete Quiz Player `DELETE /api/quizes/:quizId/players/:playerId`
+
+### Create Quiz Round `POST /api/quizes/:quizId/rounds`
+Creates a new round and sets `currentRouteId` to the new rounds Id.
+
+### Response Body:
+
+``` json
+{
+	"quizId": "b0ad66ee-6001-4be8-8a88-9e03dda3c699",
+	"roundId": "4e74a3ac-92b0-456a-b4a8-b790e2974f44"
+}
+```
+
+### Create Quiz Round Buzz `POST /api/quizes/:quizId/rounds/current/buzzes`
+
+### Request Body
+
+``` json
+{
+	"playerId": "b2100f76-3ff2-4225-822a-bf118b9937d3",
+	"teamId": "d363e891-f531-4157-ac89-9122309d1bbd"
+}
+```
+
+### Response Body:
+
+``` json
+{
+	"quizId": "b0ad66ee-6001-4be8-8a88-9e03dda3c699",
+	"roundId": "4e74a3ac-92b0-456a-b4a8-b790e2974f44",
+	"buzzId": "1fa1245e-f994-4ac1-b201-d47ac4e08f4f"
+}
+```
