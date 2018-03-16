@@ -4,6 +4,7 @@
 		<meta charset="utf-8">
 		<title>React App Setup</title>
 		<link href="/animate.css" rel="stylesheet">
+		<link href="/index.css" rel="stylesheet">
 		<style>
 			html, body {padding: 0; margin: 0; height: 100%}
 			.main {background-color: #34495E; height: 100%}
@@ -17,8 +18,8 @@
 			.new-round-button {position: absolute; bottom: 1rem; right: 1rem; background-color: rgba(0,0,0,.1); border-width: 0; padding: 1rem; border-radius: 2px; color: #fff; font-size: 1rem;}
 		</style>
 	</head>
-	<body>
-		<main class="main"></main>
+	<body class="body">
+		<main class="main" id="root"></main>
 		<script src="/socket.io/socket.io.js"></script>
 	</body>
 </html>

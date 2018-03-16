@@ -6,7 +6,7 @@ const HtmlWebpackPluginConfig = new HtmlWebpackPlugin({
 	template: './src/client/index.html',
 	filename: 'index.html',
 	inject: 'body'
-})
+});
 
 module.exports = {
 	entry: ['./src/client/index.js'],
@@ -29,4 +29,4 @@ module.exports = {
 			'process.env.NODE_ENV': '"production"'
 		})
 	]
-}
+};
