@@ -6,13 +6,13 @@ import http from 'http';
 import socketIo from 'socket.io';
 import uuid from 'uuid';
 import compression from 'compression';
+import shortid from 'shortid';
 
 async function main () {
 	try {
 		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
 		const db = await mongodb.MongoClient.connect(mongodbConnectionString);
-		const buttons = db.collection('buttons');
-		const rounds = db.collection('rounds');
+		const quizes = db.collection('quizes');
 
 		const app = express();
 		app.use(compression());
@@ -22,62 +22,184 @@ async function main () {
 		const server = http.Server(app);
 		const io = socketIo(server);
 
-		app.get('/api/rounds/current', util.callbackify(async (req, res) => {
-			const round = await rounds.find({}).sort({timestamp: -1 }).limit(1).toArray().then(rounds => rounds.shift());
+		app.post('/api/quizes', util.callbackify(async (req, res) => {
+			const { name } = req.body;
 
-			res.json(round);
+			const quizId = uuid.v4();
+			const code = shortid();
+			const created = new Date();
+
+			const quiz = {
+				quizId,
+				code,
+				created
+			};
+
+			await quizes.insert(quiz);
+
+			io.emit('quiz.created', { quizId }, { for: 'everyone' });
+
+			res.json({ quizId });
 		}));
 
-		app.post('/api/rounds', util.callbackify(async (req, res) => {
-			const roundId = uuid.v4();
-			const timestamp = new Date();
-			const round = {roundId, timestamp, presses: []};
+		app.post('/api/quizes/:quizId/players', util.callbackify(async (req, res) => {
+			const { quizId } = req.params;
+			const { name, teamId } = req.body;
 
-			await rounds.insert(round);
+			const playerId = uuid.v4();
+			const created = new Date();
 
-			io.emit('round-created', {roundId}, { for: 'everyone' });
+			const player = {
+				playerId,
+				name,
+				teamId,
+				created
+			};
 
-			res.json({roundId});
-		}));
-
-		app.post('/api/rounds/current/buttons/:buttonId/presses', util.callbackify(async (req, res) => {
-			const {buttonId} = req.params;
-			const timestamp = new Date();
-
-			const round = await rounds.find({}).sort({timestamp: -1 }).limit(1).toArray().then(rounds => rounds.shift());
-			const {roundId} = round;
-
-			await rounds.updateOne({roundId}, {
+			await quizes.updateOne({ quizId }, {
 				$push: {
-					presses: {
-						buttonId,
-						timestamp
-					}
+					players: player
 				}
 			});
 
-			io.emit('button-pressed', {buttonId, timestamp}, { for: 'everyone' });
+			io.emit('quiz.player.created', { quizId, playerId }, { for: 'everyone' });
 
-			res.status(204).end();
+			res.json({ quizId, playerId });
 		}));
 
-		app.get('/api/buttons', util.callbackify(async (req, res) => {
-			const _buttons = await buttons.find({}, {_id: 0, buttonId: 1, name: 1}).toArray();
+		app.put('/api/quizes/:quizId/players/:playerId', util.callbackify(async (req, res) => {
+			const { quizId, playerId } = req.params;
+			const { name, teamId } = req.body;
 
-			res.json(_buttons);
+			const updated = new Date();
+
+			const player = {
+				playerId,
+				name,
+				teamId,
+				updated
+			};
+
+			await quizes.updateOne(
+				{ quizId, 'player.playerId': playerId },
+				{ $set: { 
+					'players.$.name' : name,
+					'players.$.teamId' : teamId,
+					'players.$.updated' : updated 
+				} }
+			);
+
+			io.emit('quiz.player.updated', { quizId, playerId }, { for: 'everyone' });
+
+			res.json({ quizId, playerId });
 		}));
 
-		app.post('/api/buttons', util.callbackify(async (req, res) => {
-			const buttonId = uuid.v4();
-			const {name} = req.body;
-			const button = {buttonId, name, presses: []};
+		app.delete('/api/quizes/:quizId/players/:playerId', util.callbackify(async (req, res) => {
+			const { quizId, playerId } = req.params;
 
-			await buttons.insert(button);
+			const updated = new Date();
 
-			io.emit('button-added', {buttonId, name}, { for: 'everyone' });
+			const player = {
+				playerId,
+				name,
+				teamId,
+				updated
+			};
 
-			res.json({buttonId, name});
+			await quizes.updateOne(
+				{ quizId, 'player.playerId': playerId },
+				{ $pull: { players: { playerId } } },
+			);
+
+			io.emit('quiz.player.deleted', { quizId, playerId }, { for: 'everyone' });
+
+			res.json({ quizId, playerId });
 		}));
+
+		app.post('/api/quizes/:quizId/teams', util.callbackify(async (req, res) => {
+			const { quizId } = req.params;
+			const { name } = req.body;
+
+			const teamId = uuid.v4();
+			const created = new Date();
+
+			const team = {
+				quizId,
+				code,
+				created
+			};
+
+			await quizes.updateOne({ quizId }, {
+				$push: {
+					teams: team
+				}
+			});
+
+			io.emit('quiz.team.created', { quizId, teamId }, { for: 'everyone' });
+
+			res.json({ quizId, teamId });
+		}));
+
+		app.post('/api/quizes/:quizId/rounds', util.callbackify(async (req, res) => {
+			const { quizId } = req.params;
+
+			const roundId = uuid.v4();
+			const created = new Date();
+
+			const round = {
+				roundId,
+				created
+			};
+
+			await quizes.updateOne({ quizId }, {
+				$push: {
+					rounds: round
+				}
+			});
+
+			io.emit('quiz.round.created', { quizId, roundId }, { for: 'everyone' });
+
+			res.json({ quizId, roundId });
+		}));
+
+		app.post('/api/quizes/:quizId/rounds/:roundId/buzzes', util.callbackify(async (req, res) => {
+			const { quizId, roundId } = req.params;
+			const { playerId } = req.body;
+
+			const buzzId = uuid.v4();
+			const created = new Date();
+
+			const buzz = {
+				buzzId,
+				created
+			};
+
+			await quizes.updateOne(
+				{ quizId, 'rounds.roundId': roundId },
+				{ $push: { 'rounds.$.buzzes': buzz } }
+			);
+
+			io.emit('quiz.round.buzzes.created', { quizId, roundId, buzzId }, { for: 'everyone' });
+
+			res.json({ quizId, roundId, buzzId });
+		}));
+
+		app.get('/api/quiezes/:quizId', util.callbackify(async (req, res) => {
+			const quiz = await quizes.find({ quizId });
+
+			res.json(quiz);
+		}));
+
+		app.delete('/api/quizes/:quizId', util.callbackify(async (req, res) => {
+			const { quizId } = req.params;
+
+			await quizes.removeOne({ quizId });
+
+			io.emit('quiz.deleted', { quizId }, { for: 'everyone' });
+
+			res.json({ quizId });
+		}));
+
 
 		app.use((err, req, res, next) => {
 			res.status(500).json({err: err.message});
