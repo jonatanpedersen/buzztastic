@@ -20,5 +20,14 @@
     /* W3C */
     display:box;
     box-pack:center;
-    box-align:center;
+	box-align:center;
+	color: white;
+}
+
+h1 {
+font-size: 2.5rem;
+}
+
+h2 {
+font-size: 2rem;
 }

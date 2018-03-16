@@ -8,7 +8,7 @@ import {
 } from 'react-router-dom'
 
 import Home from './Home'
-import StartQuiz from './StartQuiz';
+import Quiz from './Quiz';
 
 export default class App extends Component {
 	render() {
@@ -19,8 +19,8 @@ export default class App extends Component {
 						{/* <ul>
 							<li><Link to="/">Home</Link></li>
 						</ul> */}
-						<Route exact={true} path="/" component={Home} />
-						<Route path="/start-quiz" component={StartQuiz} />
+						<Route exact path="/" component={Home} />
+						<Route path="/quiz" component={Quiz} />
 						{/* <Route path="/hello" component={Hello} /> */}
 					</div>
 				</div>
