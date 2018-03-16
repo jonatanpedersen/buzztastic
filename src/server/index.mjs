@@ -8,6 +8,8 @@ import uuid from 'uuid';
 import compression from 'compression';
 import shortid from 'shortid';
 
+const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
+
 async function main () {
 	try {
 		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
@@ -44,6 +46,10 @@ async function main () {
 
 		app.param('quizId', async (req, res, next, quizId) => {
 			try {
+				if (!UUID.test(quizId)) {
+					throw new BadRequestHttpError('quizId is not a uuid');
+				}
+
 				res.locals.quiz = await quizes.findOne({quizId});
 				next();
 			} catch(err) {
@@ -51,9 +57,25 @@ async function main () {
 			}
 		});
 
+		app.param('teamId', (req, res, next, teamId) => {
+			if (!UUID.test(teamId)) {
+				throw new BadRequestHttpError('teamId is not a uuid');
+			}
+		});
+
+		app.param('playerId', (req, res, next, playerId) => {
+			if (!UUID.test(playerId)) {
+				throw new BadRequestHttpError('playerId is not a uuid');
+			}
+		});
+
 		app.post('/api/quizes/:quizId/players', util.callbackify(async (req, res) => {
 			const { quizId } = req.params;
 			const { name, teamId } = req.body;
+
+			if (!UUID.test(teamId)) {
+				throw new BadRequestHttpError('teamId is not a uuid');
+			}
 
 			const playerId = uuid.v4();
 			const created = new Date();
@@ -81,6 +103,10 @@ async function main () {
 		app.put('/api/quizes/:quizId/players/:playerId', util.callbackify(async (req, res) => {
 			const { quizId, playerId } = req.params;
 			const { name, teamId } = req.body;
+
+			if (!UUID.test(teamId)) {
+				throw new BadRequestHttpError('teamId is not a uuid');
+			}
 
 			const updated = new Date();
 
@@ -175,6 +201,10 @@ async function main () {
 			const { quizId } = req.params;
 			const { playerId, teamId } = req.body;
 
+			if (!UUID.test(playerId)) {
+				throw new BadRequestHttpError('playerId is not a uuid');
+			}
+
 			const buzzId = uuid.v4();
 			const roundId = currentRoundId;
 			const roundIndex = rounds.findIndex(round => round.roundId === roundId);
@@ -212,8 +242,6 @@ async function main () {
 					} 
 				} 
 			};
-
-			console.log(JSON.stringify({quiz, query, update}, null, 4));
 
 			await quizes.updateOne(query, update).then(throwIfNotUpdated);
 
@@ -264,18 +292,16 @@ async function throwIfNotUpdated (doc) {
 }
 
 class HttpError extends Error {
-	constructor (code) {
-		super();
+	constructor (code, message) {
+		super(message);
 		this.code = code;
 	}
 }
 
 class BadRequestHttpError extends HttpError {
-	constructor (code) {
-		super(400);
-	}	
+	constructor (message) {
+		super(400, message);
+	}
 }
-
-
 
 main();
