@@ -1,5 +1,7 @@
 # buzztastic
 
+The Buzztastic Quiz Buzzer
+
 ## API
 
 ### Create Quiz `POST /api/quizes`
@@ -78,7 +80,6 @@ Response Body:
 	"teamId": "d363e891-f531-4157-ac89-9122309d1bbd"
 }
 ```
-
 
 ### Create Quiz Player `POST /api/quizes/:quizId/players`
 
