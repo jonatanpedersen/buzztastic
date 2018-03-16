@@ -4,7 +4,7 @@
 
 ### Create Quiz `POST /api/quizes`
 
-### Request Body
+Request Body:
 
 ``` json
 {
@@ -12,7 +12,7 @@
 }
 ```
 
-### Response Body:
+Response Body:
 
 ``` json
 {
@@ -22,7 +22,7 @@
 
 ### Get Quiz `GET /api/quizes/:quizId`
 
-### Response Body:
+Response Body:
 
 ``` json
 {
@@ -62,7 +62,7 @@
 
 ### Create Quiz Team `POST /api/quizes/:quizId/teams`
 
-### Request Body
+Request Body:
 
 ``` json
 {
@@ -70,7 +70,7 @@
 }
 ```
 
-### Response Body:
+Response Body:
 
 ``` json
 {
@@ -82,7 +82,7 @@
 
 ### Create Quiz Player `POST /api/quizes/:quizId/players`
 
-### Request Body
+Request Body:
 
 ``` json
 {
@@ -91,7 +91,7 @@
 }
 ```
 
-### Response Body:
+Response Body:
 
 ``` json
 {
@@ -102,7 +102,7 @@
 
 ### Update Quiz Player `PUT /api/quizes/:quizId/players/:playerId`
 
-### Request Body
+Request Body:
 
 ``` json
 {
@@ -111,7 +111,7 @@
 }
 ```
 
-### Response Body:
+Response Body:
 
 ``` json
 {
@@ -125,7 +125,7 @@
 ### Create Quiz Round `POST /api/quizes/:quizId/rounds`
 Creates a new round and sets `currentRouteId` to the new rounds Id.
 
-### Response Body:
+Response Body:
 
 ``` json
 {
@@ -136,7 +136,7 @@ Creates a new round and sets `currentRouteId` to the new rounds Id.
 
 ### Create Quiz Round Buzz `POST /api/quizes/:quizId/rounds/current/buzzes`
 
-### Request Body
+Request Body:
 
 ``` json
 {
@@ -145,7 +145,7 @@ Creates a new round and sets `currentRouteId` to the new rounds Id.
 }
 ```
 
-### Response Body:
+Response Body:
 
 ``` json
 {
