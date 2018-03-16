@@ -29,6 +29,7 @@ Response Body:
 ``` json
 {
 	"quizId": "b0ad66ee-6001-4be8-8a88-9e03dda3c699",
+	"code": "NJOIPN",
 	"name": "H4ck th3 pl4n3t",
 	"players": [
 		{
@@ -58,7 +59,9 @@ Response Body:
 				}
 			]
 		}
-	]
+	],
+	"currentRoundId": "4e74a3ac-92b0-456a-b4a8-b790e2974f44",
+	"created": "2018-03-14T17:19:01.470Z"
 }
 ```
 
