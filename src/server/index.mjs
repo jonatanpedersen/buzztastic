@@ -168,6 +168,7 @@ async function main () {
 
 			const buzz = {
 				buzzId,
+				playerId,
 				created
 			};
 
