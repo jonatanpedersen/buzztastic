@@ -28,7 +28,7 @@ async function main () {
 			const { name } = req.body;
 
 			const quizId = uuid.v4();
-			const code = shortid();
+			const code = createQuizCode();
 			const created = new Date();
 
 			const quiz = {
@@ -44,13 +44,14 @@ async function main () {
 			res.json({ quizId });
 		}));
 
-		app.param('quizId', async (req, res, next, quizId) => {
+		app.param('quizIdOrCode', async (req, res, next, quizIdOrCode) => {
 			try {
-				if (!UUID.test(quizId)) {
-					throw new BadRequestHttpError('quizId is not a uuid');
+				res.locals.quiz = await quizes.findOne({ $or: [ { quizId: quizIdOrCode }, { code: quizIdOrCode } ] });
+
+				if (!res.locals.quiz) {
+					throw new NotFoundHttpError('Quiz Not Found');
 				}
 
-				res.locals.quiz = await quizes.findOne({quizId});
 				next();
 			} catch(err) {
 				next(err);
@@ -69,13 +70,10 @@ async function main () {
 			}
 		});
 
-		app.post('/api/quizes/:quizId/players', util.callbackify(async (req, res) => {
-			const { quizId } = req.params;
-			const { name, teamId } = req.body;
-
-			if (!UUID.test(teamId)) {
-				throw new BadRequestHttpError('teamId is not a uuid');
-			}
+		app.post('/api/quizes/:quizIdOrCode/players', util.callbackify(async (req, res) => {
+			const { quiz } = res.locals;
+			const { quizId } = quiz;
+			const { name, } = req.body;
 
 			const playerId = uuid.v4();
 			const created = new Date();
@@ -83,7 +81,6 @@ async function main () {
 			const player = {
 				playerId,
 				name,
-				teamId,
 				created
 			};
 
@@ -100,8 +97,10 @@ async function main () {
 			res.json({ quizId, playerId });
 		}));
 
-		app.put('/api/quizes/:quizId/players/:playerId', util.callbackify(async (req, res) => {
-			const { quizId, playerId } = req.params;
+		app.put('/api/quizes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res) => {
+			const { quiz } = res.locals;
+			const { quizId } = quiz;
+			const { playerId } = req.params;
 			const { name, teamId } = req.body;
 
 			if (!UUID.test(teamId)) {
@@ -132,8 +131,10 @@ async function main () {
 			res.json({ quizId, playerId });
 		}));
 
-		app.delete('/api/quizes/:quizId/players/:playerId', util.callbackify(async (req, res) => {
-			const { quizId, playerId } = req.params;
+		app.delete('/api/quizes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res) => {
+			const { quiz } = res.locals;
+			const { quizId } = quiz;
+			const { playerId } = req.params;
 
 			const updated = new Date();
 
@@ -150,8 +151,9 @@ async function main () {
 			res.json({ quizId, playerId });
 		}));
 
-		app.post('/api/quizes/:quizId/teams', util.callbackify(async (req, res) => {
-			const { quizId } = req.params;
+		app.post('/api/quizes/:quizIdOrCode/teams', util.callbackify(async (req, res) => {
+			const { quiz } = res.locals;
+			const { quizId } = quiz;
 			const { name } = req.body;
 
 			const teamId = uuid.v4();
@@ -172,8 +174,9 @@ async function main () {
 			res.json({ quizId, teamId });
 		}));
 
-		app.post('/api/quizes/:quizId/rounds', util.callbackify(async (req, res) => {
-			const { quizId } = req.params;
+		app.post('/api/quizes/:quizIdOrCode/rounds', util.callbackify(async (req, res) => {
+			const { quiz } = res.locals;
+			const { quizId } = quiz;
 
 			const roundId = uuid.v4();
 			const created = new Date();
@@ -195,10 +198,9 @@ async function main () {
 			res.json({ quizId, roundId });
 		}));
 
-		app.post('/api/quizes/:quizId/rounds/current/buzzes', util.callbackify(async (req, res) => {
+		app.post('/api/quizes/:quizIdOrCode/rounds/current/buzzes', util.callbackify(async (req, res) => {
 			const { quiz } = res.locals;
-			const { currentRoundId, rounds } = quiz;
-			const { quizId } = req.params;
+			const { currentRoundId, rounds, quizId } = quiz;
 			const { playerId, teamId } = req.body;
 
 			if (!UUID.test(playerId)) {
@@ -250,15 +252,16 @@ async function main () {
 			res.json({ quizId, roundId, buzzId });
 		}));
 
-		app.get('/api/quizes/:quizId', util.callbackify(async (req, res) => {
-			const { quizId } = req.params;
-			const quiz = await quizes.findOne({ quizId });
+		app.get('/api/quizes/:quizIdOrCode', util.callbackify(async (req, res) => {
+			const { quiz } = res.locals;
+			const { quizId } = quiz;
 
 			res.json(quiz);
 		}));
 
-		app.delete('/api/quizes/:quizId', util.callbackify(async (req, res) => {
-			const { quizId } = req.params;
+		app.delete('/api/quizes/:quizIdOrCode', util.callbackify(async (req, res) => {
+			const { quiz } = res.locals;
+			const { quizId } = quiz;
 
 			await quizes.removeOne({ quizId });
 
@@ -298,10 +301,27 @@ class HttpError extends Error {
 	}
 }
 
+class NotFoundHttpError extends HttpError {
+	constructor (message) {
+		super(404, message);
+	}
+}
+
 class BadRequestHttpError extends HttpError {
 	constructor (message) {
 		super(400, message);
 	}
+}
+
+function createQuizCode () {
+	var code = "";
+	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	
+	for (let i = 0; i < 6; i++) {
+		code += chars.charAt(Math.floor(Math.random() * chars.length));
+	}
+	
+	return code;
 }
 
 main();
