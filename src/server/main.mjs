@@ -14,16 +14,18 @@ const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
 export async function main () {
 	try {
+		const env = process.env.NODE_ENV;
+
 		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
 		const db = await mongodb.MongoClient.connect(mongodbConnectionString);
 		const quizzes = db.collection('quizzes');
 
-		const app = express();
-		app.use(compression());
-		app.use(express.static('public'));
-		app.use(bodyParser.json());
+		const router = express();
+		router.use(compression());
 
-		const server = http.Server(app);
+		router.use(bodyParser.json());
+
+		const server = http.Server(router);
 		const io = socketIo(server);
 
 		const api = express.Router();
@@ -274,12 +276,28 @@ export async function main () {
 			res.json({ quizId });
 		}));
 
-		app.use('/api', api);
+		const app = express.Router();
+		app.use(express.static('app'));
 
-		const apiHost = vhost('api.qubu.io', api);
-		app.use(apiHost);
+		const www = express.Router();
+		www.use(express.static('www'));
 
-		app.use((err, req, res, next) => {
+		if (env === 'production') {
+			const apiHost = vhost('api.qubu.io', api);
+			router.use(apiHost);
+
+			const appHost = vhost('app.qubu.io', app);
+			router.use(appHost);
+
+			const wwwHost = vhost('qubu.io', www);
+			router.use(wwwHost);
+		} else {
+			router.use('/api', api);
+			router.use('/app', app);
+			router.use('/www', www);
+		}
+
+		router.use((err, req, res, next) => {
 			console.error(err);
 
 			res.status(err.code || 500).end();
