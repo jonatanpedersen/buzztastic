@@ -70,14 +70,18 @@ export async function main () {
 
 		api.param('teamId', (req, res, next, teamId) => {
 			if (!UUID.test(teamId)) {
-				throw new BadRequestHttpError('teamId is not a uuid');
+				next(BadRequestHttpError('teamId is not a uuid'));
 			}
+
+			next();
 		});
 
 		api.param('playerId', (req, res, next, playerId) => {
 			if (!UUID.test(playerId)) {
-				throw new BadRequestHttpError('playerId is not a uuid');
+				next(new BadRequestHttpError('playerId is not a uuid'));
 			}
+
+			next();
 		});
 
 		api.post('/quizzes/:quizIdOrCode/players', util.callbackify(async (req, res, next) => {
@@ -109,18 +113,13 @@ export async function main () {
 
 		api.put('/quizzes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
-			console.log(quiz);
 			const { quizId } = quiz;
 			const { playerId } = req.params;
 			const { name, teamId } = req.body;
 
-			console.log(1);
-
 			if (!UUID.test(teamId)) {
 				throw new BadRequestHttpError('teamId is not a uuid');
 			}
-
-			console.log(2);
 
 			const updated = new Date();
 
