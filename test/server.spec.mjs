@@ -10,7 +10,7 @@ const tests = [
 		description: 'create quiz',
 		request: {
 			method: 'POST',
-			url: `${BASE_URL}/api/quizes`,
+			url: `${BASE_URL}/api/quizzes`,
 			body: {}
 		},
 		response: {
@@ -21,7 +21,7 @@ const tests = [
 		description: 'create quiz',
 		request: {
 			method: 'POST',
-			url: `${BASE_URL}/api/quizes`,
+			url: `${BASE_URL}/api/quizzes`,
 			body: {
 				name: 'Test Quiz'
 			}
@@ -35,7 +35,7 @@ const tests = [
 		description: 'get quiz',
 		request: {
 			method: 'GET',
-			url: tests => `${BASE_URL}/api/quizes/${tests[0].actualResponse.body.quizId}`,
+			url: tests => `${BASE_URL}/api/quizzes/${tests[0].actualResponse.body.quizId}`,
 			body: {
 				name: 'Test Quiz'
 			}

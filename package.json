@@ -28,7 +28,8 @@
     "nodemon": "^1.17.2",
     "shortid": "2.2.8",
     "socket.io": "2.0.4",
-    "uuid": "3.2.1"
+    "uuid": "3.2.1",
+    "vhost": "3.0.2"
   },
   "devDependencies": {
     "@std/esm": "0.25.3",

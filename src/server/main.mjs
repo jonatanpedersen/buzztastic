@@ -8,6 +8,7 @@ import uuid from 'uuid';
 import compression from 'compression';
 import shortid from 'shortid';
 import { assertNotNullOrUndefineds, assertNotEmptyStrings } from './assert';
+import vhost from 'vhost';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
@@ -15,7 +16,7 @@ export async function main () {
 	try {
 		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
 		const db = await mongodb.MongoClient.connect(mongodbConnectionString);
-		const quizes = db.collection('quizes');
+		const quizzes = db.collection('quizzes');
 
 		const app = express();
 		app.use(compression());
@@ -25,7 +26,9 @@ export async function main () {
 		const server = http.Server(app);
 		const io = socketIo(server);
 
-		app.post('/api/quizes', util.callbackify(async (req, res) => {
+		const api = express.Router();
+
+		api.post('/quizzes', util.callbackify(async (req, res) => {
 			const { name } = req.body;
 
 			const quizId = uuid.v4();
@@ -38,16 +41,16 @@ export async function main () {
 				created
 			};
 
-			await quizes.insert(quiz);
+			await quizzes.insert(quiz);
 
 			io.emit('quiz.created', { quizId }, { for: 'everyone' });
 
 			res.json({ quizId });
 		}));
 
-		app.param('quizIdOrCode', async (req, res, next, quizIdOrCode) => {
+		api.param('quizIdOrCode', async (req, res, next, quizIdOrCode) => {
 			try {
-				res.locals.quiz = await quizes.findOne({ $or: [ { quizId: quizIdOrCode }, { code: quizIdOrCode } ] });
+				res.locals.quiz = await quizzes.findOne({ $or: [ { quizId: quizIdOrCode }, { code: quizIdOrCode } ] });
 
 				if (!res.locals.quiz) {
 					throw new NotFoundHttpError('Quiz Not Found');
@@ -59,19 +62,19 @@ export async function main () {
 			}
 		});
 
-		app.param('teamId', (req, res, next, teamId) => {
+		api.param('teamId', (req, res, next, teamId) => {
 			if (!UUID.test(teamId)) {
 				throw new BadRequestHttpError('teamId is not a uuid');
 			}
 		});
 
-		app.param('playerId', (req, res, next, playerId) => {
+		api.param('playerId', (req, res, next, playerId) => {
 			if (!UUID.test(playerId)) {
 				throw new BadRequestHttpError('playerId is not a uuid');
 			}
 		});
 
-		app.post('/api/quizes/:quizIdOrCode/players', util.callbackify(async (req, res) => {
+		api.post('/quizzes/:quizIdOrCode/players', util.callbackify(async (req, res) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 			const { name, } = req.body;
@@ -87,7 +90,7 @@ export async function main () {
 
 			const updated = new Date();
 
-			await quizes.updateOne({ quizId }, {
+			await quizzes.updateOne({ quizId }, {
 				$push: {
 					players: player
 				}
@@ -98,7 +101,7 @@ export async function main () {
 			res.json({ quizId, playerId });
 		}));
 
-		app.put('/api/quizes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res) => {
+		api.put('/quizzes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 			const { playerId } = req.params;
@@ -117,7 +120,7 @@ export async function main () {
 				updated
 			};
 
-			await quizes.updateOne(
+			await quizzes.updateOne(
 				{ quizId, 'players.playerId': playerId },
 				{ $set: {
 						'players.$.name' : name,
@@ -132,14 +135,14 @@ export async function main () {
 			res.json({ quizId, playerId });
 		}));
 
-		app.delete('/api/quizes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res) => {
+		api.delete('/quizzes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 			const { playerId } = req.params;
 
 			const updated = new Date();
 
-			await quizes.updateOne(
+			await quizzes.updateOne(
 				{ quizId, 'players.playerId': playerId },
 				{
 					$pull: { players: { playerId } },
@@ -152,7 +155,7 @@ export async function main () {
 			res.json({ quizId, playerId });
 		}));
 
-		app.post('/api/quizes/:quizIdOrCode/teams', util.callbackify(async (req, res) => {
+		api.post('/quizzes/:quizIdOrCode/teams', util.callbackify(async (req, res) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 			const { name } = req.body;
@@ -166,7 +169,7 @@ export async function main () {
 				created
 			};
 
-			await quizes.updateOne({ quizId }, {
+			await quizzes.updateOne({ quizId }, {
 				$push: { teams: team }
 			}).then(throwIfNotUpdated);
 
@@ -175,7 +178,7 @@ export async function main () {
 			res.json({ quizId, teamId });
 		}));
 
-		app.post('/api/quizes/:quizIdOrCode/rounds', util.callbackify(async (req, res) => {
+		api.post('/quizzes/:quizIdOrCode/rounds', util.callbackify(async (req, res) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 
@@ -187,7 +190,7 @@ export async function main () {
 				created
 			};
 
-			await quizes.updateOne({ quizId }, {
+			await quizzes.updateOne({ quizId }, {
 				$push: {
 					rounds: round
 				},
@@ -199,7 +202,7 @@ export async function main () {
 			res.json({ quizId, roundId });
 		}));
 
-		app.post('/api/quizes/:quizIdOrCode/rounds/current/buzzes', util.callbackify(async (req, res) => {
+		api.post('/quizzes/:quizIdOrCode/rounds/current/buzzes', util.callbackify(async (req, res) => {
 			const { quiz } = res.locals;
 			const { currentRoundId, rounds, quizId } = quiz;
 			const { playerId, teamId } = req.body;
@@ -246,30 +249,35 @@ export async function main () {
 				}
 			};
 
-			await quizes.updateOne(query, update).then(throwIfNotUpdated);
+			await quizzes.updateOne(query, update).then(throwIfNotUpdated);
 
 			io.emit('quiz.round.buzzes.created', { quizId, roundId, buzzId }, { for: 'everyone' });
 
 			res.json({ quizId, roundId, buzzId });
 		}));
 
-		app.get('/api/quizes/:quizIdOrCode', util.callbackify(async (req, res) => {
+		api.get('/quizzes/:quizIdOrCode', util.callbackify(async (req, res) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 
 			res.json(quiz);
 		}));
 
-		app.delete('/api/quizes/:quizIdOrCode', util.callbackify(async (req, res) => {
+		api.delete('/quizzes/:quizIdOrCode', util.callbackify(async (req, res) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 
-			await quizes.removeOne({ quizId });
+			await quizzes.removeOne({ quizId });
 
 			io.emit('quiz.deleted', { quizId }, { for: 'everyone' });
 
 			res.json({ quizId });
 		}));
+
+		app.use('/api', api);
+
+		const apiHost = vhost('api.qubu.io', api);
+		app.use(apiHost);
 
 		app.use((err, req, res, next) => {
 			console.error(err);
