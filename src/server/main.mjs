@@ -30,6 +30,12 @@ export async function main () {
 
 		const api = express.Router();
 
+		api.get('/quizzes', util.callbackify(async (req, res) => {
+			await quizzes.find({}).toArray();
+
+			res.json(quizzes);
+		}));
+
 		api.post('/quizzes', util.callbackify(async (req, res) => {
 			const { name } = req.body;
 
