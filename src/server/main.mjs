@@ -80,7 +80,7 @@ export async function main () {
 			}
 		});
 
-		api.post('/quizzes/:quizIdOrCode/players', util.callbackify(async (req, res) => {
+		api.post('/quizzes/:quizIdOrCode/players', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 			const { name, } = req.body;
@@ -107,7 +107,7 @@ export async function main () {
 			res.json({ quizId, playerId });
 		}));
 
-		api.put('/quizzes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res) => {
+		api.put('/quizzes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 			const { playerId } = req.params;
@@ -141,7 +141,7 @@ export async function main () {
 			res.json({ quizId, playerId });
 		}));
 
-		api.delete('/quizzes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res) => {
+		api.delete('/quizzes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 			const { playerId } = req.params;
@@ -161,7 +161,7 @@ export async function main () {
 			res.json({ quizId, playerId });
 		}));
 
-		api.post('/quizzes/:quizIdOrCode/teams', util.callbackify(async (req, res) => {
+		api.post('/quizzes/:quizIdOrCode/teams', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 			const { name } = req.body;
@@ -184,7 +184,7 @@ export async function main () {
 			res.json({ quizId, teamId });
 		}));
 
-		api.post('/quizzes/:quizIdOrCode/rounds', util.callbackify(async (req, res) => {
+		api.post('/quizzes/:quizIdOrCode/rounds', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 
@@ -208,7 +208,7 @@ export async function main () {
 			res.json({ quizId, roundId });
 		}));
 
-		api.post('/quizzes/:quizIdOrCode/rounds/current/buzzes', util.callbackify(async (req, res) => {
+		api.post('/quizzes/:quizIdOrCode/rounds/current/buzzes', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
 			const { currentRoundId, rounds, quizId } = quiz;
 			const { playerId, teamId } = req.body;
@@ -262,14 +262,14 @@ export async function main () {
 			res.json({ quizId, roundId, buzzId });
 		}));
 
-		api.get('/quizzes/:quizIdOrCode', util.callbackify(async (req, res) => {
+		api.get('/quizzes/:quizIdOrCode', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 
 			res.json(quiz);
 		}));
 
-		api.delete('/quizzes/:quizIdOrCode', util.callbackify(async (req, res) => {
+		api.delete('/quizzes/:quizIdOrCode', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
 
