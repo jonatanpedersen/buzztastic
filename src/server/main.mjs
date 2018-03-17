@@ -70,7 +70,7 @@ export async function main () {
 
 		api.param('teamId', (req, res, next, teamId) => {
 			if (!UUID.test(teamId)) {
-				next(BadRequestHttpError('teamId is not a uuid'));
+				return next(BadRequestHttpError('teamId is not a uuid'));
 			}
 
 			next();
@@ -78,7 +78,7 @@ export async function main () {
 
 		api.param('playerId', (req, res, next, playerId) => {
 			if (!UUID.test(playerId)) {
-				next(new BadRequestHttpError('playerId is not a uuid'));
+				return next(new BadRequestHttpError('playerId is not a uuid'));
 			}
 
 			next();
