@@ -109,22 +109,20 @@ export async function main () {
 
 		api.put('/quizzes/:quizIdOrCode/players/:playerId', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
+			console.log(quiz);
 			const { quizId } = quiz;
 			const { playerId } = req.params;
 			const { name, teamId } = req.body;
+
+			console.log(1);
 
 			if (!UUID.test(teamId)) {
 				throw new BadRequestHttpError('teamId is not a uuid');
 			}
 
-			const updated = new Date();
+			console.log(2);
 
-			const player = {
-				playerId,
-				name,
-				teamId,
-				updated
-			};
+			const updated = new Date();
 
 			await quizzes.updateOne(
 				{ quizId, 'players.playerId': playerId },
