@@ -177,10 +177,6 @@ const tests = [
 		},
 		response: {
 			body: {
-				quizId: UUID,
-				code: CODE,
-				created: UTC,
-				name: 'Test Quiz',
 				currentRoundId: ({createQuizRound}) => createQuizRound.actualResponse.body.roundId
 			},
 			status: 200,
@@ -200,8 +196,8 @@ const tests = [
 		},
 		response: {
 			body: {
-				quizId: UUID,
-				roundId: UUID,
+				quizId: ({createQuiz}) => createQuiz.actualResponse.body.quizId,
+				roundId: ({createQuizRound}) => createQuizRound.actualResponse.body.roundId,
 				buzzId: UUID
 			},
 			status: 200,
@@ -221,8 +217,8 @@ const tests = [
 		},
 		response: {
 			body: {
-				quizId: UUID,
-				roundId: UUID,
+				quizId: ({createQuiz}) => createQuiz.actualResponse.body.quizId,
+				roundId: ({createQuizRound}) => createQuizRound.actualResponse.body.roundId,
 				buzzId: UUID
 			},
 			status: 200,
