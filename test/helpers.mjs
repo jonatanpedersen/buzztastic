@@ -1,10 +1,17 @@
 import nodeFetch from 'node-fetch';
 import chai from 'chai';
+import createDebug from 'debug';
 
 const { expect } = chai;
 
 export function describeHttpTests (tests) {
+	const debug = createDebug('test');
+
+	const context = {};
+
 	tests.forEach(test => {
+		test = context[test.id] = {...test};
+
 		let describeTest;
 
 		if (test.skip) {
@@ -16,31 +23,58 @@ export function describeHttpTests (tests) {
 		}
 
 		describeTest(test.description, () => {
-			let response, requestUrl;
+			let requestUrl;
 
-			before(() => {
-				const url = isFunction(test.request.url) ? test.request.url(tests) : test.request.url;
+			before(async () => {
+				const url = isFunction(test.request.url) ? test.request.url(context) : test.request.url;
 
-				return nodeFetch(url, {
+				const requestBody = evalObj(test.request.body);
+
+				function evalObj (obj) {
+					if (obj === null || obj === undefined) {
+						return;
+					}
+
+					for (const key in obj) {
+						const value = obj[key];
+
+						if (isFunction(value)) {
+							obj = { ...obj, [key]: value(context) };
+						} else if (typeof expectedValue === 'object') {
+							obj = { ...obj, [key]: evalObj(value) };
+						}
+					}
+
+					return obj;
+				}
+
+				const request = [url, {
 					method: test.request.method,
 					headers: {
 						'Accepts': 'application/json',
 						'Content-Type': 'application/json'
 					},
-					body: JSON.stringify(test.request.body)
-				})
-				.then(_response => response = _response);
+					body: JSON.stringify(requestBody)
+				}];
+
+				const response = await nodeFetch(...request);
+				const { status, statusText, headers } = response;
+				const body = await response.json();
+
+				test.actualResponse = { status, statusText, headers, body };
+
+				debug('%O', test);
 			});
 
 			describe('response', () => {
 				if (test.response.status) {
+					let status;
+
+					before(() => {
+						status = test.actualResponse.status;
+					});
+
 					describe('status', () => {
-						let status;
-
-						before(() => {
-							status = response.status;
-						});
-
 						it(`should eql ${test.response.status}`, () => {
 							expect(status).to.eql(test.response.status);
 						});
@@ -48,13 +82,13 @@ export function describeHttpTests (tests) {
 				}
 
 				if (test.response.statusText) {
+					let statusText;
+
+					before(() => {
+						statusText = test.actualResponse.statusText;
+					});
+
 					describe('statusText', () => {
-						let statusText;
-
-						before(() => {
-							statusText = response.statusText;
-						});
-
 						it(`should eql ${test.response.statusText}`, () => {
 							expect(statusText).to.eql(test.response.statusText);
 						});
@@ -66,7 +100,7 @@ export function describeHttpTests (tests) {
 						let headers;
 
 						before(() => {
-							headers = response.headers;
+							headers = test.actualResponse.headers;
 						});
 
 						Object.keys(test.response.headers).forEach(header => {
@@ -90,15 +124,53 @@ export function describeHttpTests (tests) {
 
 				if (test.response.body) {
 					describe('body', () => {
-						let responseBody;
+						let actualObject;
 
 						before(() => {
-							return response.json().then(obj => responseBody = obj);
+							actualObject = test.actualResponse.body;
 						});
 
-						it(`should eql ${test.response.body}`, () => {
-							expect(responseBody).to.deep.eql(test.response.body);
-						});
+						describeObject(test.response.body);
+
+						function describeObject (expectedObject) {
+							if (expectedObject === null || expectedObject === undefined) {
+								return;
+							}
+
+							for (const key in expectedObject) {
+								describe(key, () => {
+									const expected = expectedObject[key];
+
+									let actualValue;
+
+									before(() => {
+										actualValue = actualObject[key];
+									});
+
+									if (expected instanceof RegExp) {
+										it(`should match ${expected}`, () => {
+											expect(actualValue).to.match(expected);
+										});
+									} else if (isFunction(expected)) {
+										let expectedValue;
+
+										before(() => {
+											expectedValue = expected({...context, actualValue });
+										});
+
+										it(`should eql ${expected}`, () => {
+											expect(actualValue).to.eql(expectedValue);
+										});
+									} else if (typeof expected === 'object') {
+										describeObject(object);
+									} else {
+										it(`should equal "${expected}"`, () => {
+											expect(actualValue).to.eql(expected);
+										});
+									}
+								});
+							}
+						}
 					});
 				}
 			});

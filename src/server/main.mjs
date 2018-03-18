@@ -31,11 +31,15 @@ export async function main () {
 		const api = express.Router();
 
 		api.get('/quizzes', util.callbackify(async (req, res) => {
-			res.json(await quizzes.find({}).toArray());
+			res.json(await quizzes.find({}).toArray().map(withoutId));
 		}));
 
 		api.post('/quizzes', util.callbackify(async (req, res) => {
 			const { name } = req.body;
+
+			if (name === null || name === undefined || name === '') {
+				throw new BadRequestHttpError('name can not be null, undefined or an empty string');
+			}
 
 			const quizId = uuid.v4();
 			const code = createQuizCode();
@@ -44,6 +48,7 @@ export async function main () {
 			const quiz = {
 				quizId,
 				code,
+				name,
 				created
 			};
 
@@ -56,7 +61,7 @@ export async function main () {
 
 		api.param('quizIdOrCode', async (req, res, next, quizIdOrCode) => {
 			try {
-				res.locals.quiz = await quizzes.findOne({ $or: [ { quizId: quizIdOrCode }, { code: quizIdOrCode } ] });
+				res.locals.quiz = withoutId(await quizzes.findOne({ $or: [ { quizId: quizIdOrCode }, { code: quizIdOrCode } ] }));
 
 				if (!res.locals.quiz) {
 					throw new NotFoundHttpError('Quiz Not Found');
@@ -87,7 +92,11 @@ export async function main () {
 		api.post('/quizzes/:quizIdOrCode/players', util.callbackify(async (req, res, next) => {
 			const { quiz } = res.locals;
 			const { quizId } = quiz;
-			const { name, } = req.body;
+			const { name, teamId } = req.body;
+
+			if (name === null || name === undefined || name === '') {
+				throw new BadRequestHttpError('name can not be null, undefined or an empty string');
+			}
 
 			const playerId = uuid.v4();
 			const created = new Date();
@@ -95,6 +104,7 @@ export async function main () {
 			const player = {
 				playerId,
 				name,
+				teamId,
 				created
 			};
 
@@ -116,6 +126,10 @@ export async function main () {
 			const { quizId } = quiz;
 			const { playerId } = req.params;
 			const { name, teamId } = req.body;
+
+			if (name === null || name === undefined || name === '') {
+				throw new BadRequestHttpError('name can not be null, undefined or an empty string');
+			}
 
 			if (!UUID.test(teamId)) {
 				throw new BadRequestHttpError('teamId is not a uuid');
@@ -299,9 +313,9 @@ export async function main () {
 		}
 
 		router.use((err, req, res, next) => {
-			console.error(err);
+			const { message, stack } = err;
 
-			res.status(err.code || 500).end();
+			res.status(err.code || 500).json({ message, stack });
 		})
 
 		const port = process.env.PORT || 1432;
@@ -351,4 +365,11 @@ function createQuizCode () {
 	}
 
 	return code;
+}
+
+
+function withoutId (document) {
+	const {_id, ...rest} = document;
+
+	return rest;
 }

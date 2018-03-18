@@ -11,7 +11,7 @@ const HtmlWebpackPluginConfig = new HtmlWebpackPlugin({
 module.exports = {
 	entry: ['./src/client/index.js'],
 	output: {
-		path: path.resolve('public'),
+		path: path.resolve('app'),
 		filename: 'index.js'
 	},
 	module: {
