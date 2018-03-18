@@ -254,7 +254,3 @@ describe ('server', () => {
 
 	describeHttpTests(tests);
 });
-
-function isDate (string) {
-	return !isNaN(Date.parse(string));
-}

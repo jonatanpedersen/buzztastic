@@ -7,7 +7,6 @@ import socketIo from 'socket.io';
 import uuid from 'uuid';
 import compression from 'compression';
 import shortid from 'shortid';
-import { assertNotNullOrUndefineds, assertNotEmptyStrings } from './assert';
 import vhost from 'vhost';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
