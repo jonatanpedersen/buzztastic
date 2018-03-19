@@ -94,7 +94,7 @@ async function main() {
             }
             return context;
         }
-        async function updatePlayer(context) {
+        async function updateQuizPlayer(context) {
             const { quiz } = context.locals;
             const { quizId } = quiz;
             const { playerId } = context.router.params;
@@ -121,7 +121,7 @@ async function main() {
                 }
             };
         }
-        async function deletePlayer(context) {
+        async function deleteQuizPlayer(context) {
             const { quiz } = context.locals;
             const { quizId } = quiz;
             const { playerId } = context.router.params;
@@ -264,7 +264,7 @@ async function main() {
                 }
             };
         }
-        const server = http_1.createServer(core_1.createRequestListener(router_1.path('api', router_1.post(json_1.jsonParseRequestBody), router_1.put(json_1.jsonParseRequestBody), katch(router_1.path('quizzes$', router_1.get(getQuizzes), router_1.post(createQuiz)), router_1.path('quizzes', router_1.path(':quizIdOrCode', quizIdOrCode, router_1.path('players$', router_1.post(createQuizPlayer)), router_1.path('players/:playerId', playerId, router_1.put(updatePlayer), router_1.del(deletePlayer)), router_1.path('teams$', router_1.post(createQuizTeam)), router_1.path('rounds$', router_1.post(createQuizRound)), router_1.path('rounds/current/buzzes', router_1.post(createQuizRoundBuzz))), router_1.path(':quizIdOrCode$', router_1.get(getQuiz), router_1.del(deleteQuiz)))), json_1.setResponseContentTypeHeaderToApplicationJson, json_1.jsonStringifyResponseBody)));
+        const server = http_1.createServer(core_1.createRequestListener(router_1.path('api', router_1.post(json_1.jsonParseRequestBody), router_1.put(json_1.jsonParseRequestBody), katch(router_1.path('quizzes$', router_1.get(getQuizzes), router_1.post(createQuiz)), router_1.path('quizzes', router_1.path(':quizIdOrCode', quizIdOrCode, router_1.path('players$', router_1.post(createQuizPlayer)), router_1.path('players/:playerId', playerId, router_1.put(updateQuizPlayer), router_1.del(deleteQuizPlayer)), router_1.path('teams$', router_1.post(createQuizTeam)), router_1.path('rounds$', router_1.post(createQuizRound)), router_1.path('rounds/current/buzzes', router_1.post(createQuizRoundBuzz))), router_1.path(':quizIdOrCode$', router_1.get(getQuiz), router_1.del(deleteQuiz)))), json_1.setResponseContentTypeHeaderToApplicationJson, json_1.jsonStringifyResponseBody)));
         const io = socketIO(server);
         const port = process.env.PORT || 1432;
         server.listen(port, () => {
@@ -295,17 +295,9 @@ function katch(...reducers) {
         }
     };
 }
-function debug(context) {
-    console.log('context', context);
-    return context;
-}
-function withoutId(document) {
-    const { _id, ...rest } = document;
-    return rest;
-}
 function createQuizCode() {
-    var code = "";
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    var code = '';
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
     for (let i = 0; i < 6; i++) {
         code += chars.charAt(Math.floor(Math.random() * chars.length));
     }

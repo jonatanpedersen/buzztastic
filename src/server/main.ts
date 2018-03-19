@@ -119,7 +119,7 @@ export async function main () {
 			return context;
 		}
 
-		async function updatePlayer (context) {
+		async function updateQuizPlayer (context) {
 			const { quiz } = context.locals;
 			const { quizId } = quiz;
 			const { playerId } = context.router.params;
@@ -138,10 +138,10 @@ export async function main () {
 			await quizzes.updateOne(
 				{ quizId, 'players.playerId': playerId },
 				{ $set: {
-						'players.$.name' : name,
-						'players.$.teamId' : teamId,
-						'players.$.updated' : updated,
-						updated,
+					'players.$.name' : name,
+					'players.$.teamId' : teamId,
+					'players.$.updated' : updated,
+					updated,
 				} }
 			).then(throwIfNotUpdated);
 
@@ -156,7 +156,7 @@ export async function main () {
 			};
 		}
 
-		async function deletePlayer (context) {
+		async function deleteQuizPlayer (context) {
 			const { quiz } = context.locals;
 			const { quizId } = quiz;
 			const { playerId } = context.router.params;
@@ -351,8 +351,8 @@ export async function main () {
 								),
 								path('players/:playerId',
 									playerId,
-									put(updatePlayer),
-									del(deletePlayer)
+									put(updateQuizPlayer),
+									del(deleteQuizPlayer)
 								),
 								path('teams$',
 									post(createQuizTeam)
@@ -391,7 +391,7 @@ export async function main () {
 	}
 }
 
-function katch (...reducers : AsyncReducerFunction[]) {
+function katch (...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
 	return async function katch (context) {
 		try {
 			return await all(...reducers)(context);
@@ -410,21 +410,9 @@ function katch (...reducers : AsyncReducerFunction[]) {
 	}
 }
 
-function debug (context) {
-	console.log('context', context);
-
-	return context;
-}
-
-function withoutId (document) {
-	const {_id, ...rest} = document;
-
-	return rest;
-}
-
 function createQuizCode () {
-	var code = "";
-	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	var code = '';
+	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
 
 	for (let i = 0; i < 6; i++) {
 		code += chars.charAt(Math.floor(Math.random() * chars.length));
