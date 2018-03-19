@@ -34,8 +34,8 @@ const tests = [
 			body: {
 				quizId: UUID
 			},
-			status: 200,
-			statusText: 'OK'
+			status: 201,
+			statusText: 'Created'
 		}
 	},
 	{
@@ -89,8 +89,8 @@ const tests = [
 				quizId: UUID,
 				teamId: UUID
 			},
-			status: 200,
-			statusText: 'OK'
+			status: 201,
+			statusText: 'Created'
 		}
 	},
 	{
@@ -108,8 +108,8 @@ const tests = [
 				quizId: UUID,
 				playerId: UUID
 			},
-			status: 200,
-			statusText: 'OK'
+			status: 201,
+			statusText: 'Created'
 		}
 	},
 	{
@@ -148,8 +148,8 @@ const tests = [
 				quizId: UUID,
 				playerId: UUID
 			},
-			status: 200,
-			statusText: 'OK'
+			status: 201,
+			statusText: 'Created'
 		}
 	},
 	{
@@ -157,15 +157,16 @@ const tests = [
 		description: 'create quiz round',
 		request: {
 			method: 'POST',
-			url: ({createQuiz}) => `${BASE_URL}/api/quizzes/${createQuiz.actualResponse.body.quizId}/rounds`
+			url: ({createQuiz}) => `${BASE_URL}/api/quizzes/${createQuiz.actualResponse.body.quizId}/rounds`,
+			body: { }
 		},
 		response: {
 			body: {
 				quizId: UUID,
 				roundId: UUID
 			},
-			status: 200,
-			statusText: 'OK'
+			status: 201,
+			statusText: 'Created'
 		}
 	},
 	{
@@ -200,8 +201,8 @@ const tests = [
 				roundId: ({createQuizRound}) => createQuizRound.actualResponse.body.roundId,
 				buzzId: UUID
 			},
-			status: 200,
-			statusText: 'OK'
+			status: 201,
+			statusText: 'Created'
 		}
 	},
 	{
@@ -221,8 +222,8 @@ const tests = [
 				roundId: ({createQuizRound}) => createQuizRound.actualResponse.body.roundId,
 				buzzId: UUID
 			},
-			status: 200,
-			statusText: 'OK'
+			status: 201,
+			statusText: 'Created'
 		}
 	},
 	{

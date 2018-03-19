@@ -1,6 +1,6 @@
-import nodeFetch from 'node-fetch';
-import chai from 'chai';
-import createDebug from 'debug';
+import * as nodeFetch from 'node-fetch';
+import * as chai from 'chai';
+import * as createDebug from 'debug';
 
 const { expect } = chai;
 
@@ -40,7 +40,7 @@ export function describeHttpTests (tests) {
 
 						if (isFunction(value)) {
 							obj = { ...obj, [key]: value(context) };
-						} else if (typeof expectedValue === 'object') {
+						} else if (typeof value === 'object') {
 							obj = { ...obj, [key]: evalObj(value) };
 						}
 					}
