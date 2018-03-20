@@ -11,7 +11,7 @@ export default class Main extends Component {
 				<Switch>
 					<Route exact path='/app/' component={Home} />
 					<Route path='/app/quiz/' component={Quiz} />
-					<Route path='/app/start-quiz/:quizId' component={StartQuiz} />
+					<Route path='/app/start-quiz/:quizId/:quizName/:quizCode' component={StartQuiz} />
 				</Switch>
 			</main>
 		)

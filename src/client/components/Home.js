@@ -5,9 +5,9 @@ export default class Home extends Component {
 	constructor() {
 		super();
 		this.state = {};
-		this.startQuiz = this.startQuiz.bind(this);
+		this.createQuiz = this.createQuiz.bind(this);
 	}
-	startQuiz(event) {
+	createQuiz(event) {
 		event.preventDefault();
 		const name = this.state.name;
 		console.log('Name: ', name);
@@ -20,13 +20,16 @@ export default class Home extends Component {
 					'Content-Type': 'application/json'
 				})
 			})
-				.then(response => response.json())
+				.then(postResponse => postResponse.json())
 				.then((json) => {
-					console.log('response: ', json);
 					const quizId = json.quizId;
+					fetch(`/api/quizzes/${quizId}`, { method: 'GET' })
+						.then(getResponse => getResponse.json())
+						.then((json) => this.props.history.push(`/app/start-quiz/${quizId}/${json.name}/${json.code}`))
+						.catch(err => console.error(err));
+					// then(json => this.props.history.push(`/app/start-quiz/${quizId}`));
 					// window.location = `/app/start-quiz/${quizId}`;
-					return this.props.history.push(`/app/start-quiz/${quizId}`);
-				});
+				}).catch((err) => console.error(err))
 		}
 	}
 	render() {
@@ -34,24 +37,14 @@ export default class Home extends Component {
 			<section class="section--home">
 				<div class="home">
 					<h1 className="center">Buzztastic</h1>
-					<div className="home--container-create">
+					<div>
 						<h2>Create new quiz</h2>
 						<label for="start-quiz">Please type in the name of your new quiz</label>
-						<input className="home--input" id="create-quiz" value={this.state.name} onChange={event => this.setState({ name: event.target.value })}></input>
+						<input id="create-quiz" value={this.state.name} onChange={event => this.setState({ name: event.target.value })}></input>
 						<p className="center">
-							<button className="button" onClick={this.startQuiz}>Start quiz</button>
+							<button className="button" onClick={this.createQuiz}>Start quiz</button>
 						</p>
 					</div>
-					<hr className="margin" />
-					<div className="home--container-join">
-						<h2>Join existing quiz</h2>
-						<label for="join-quiz">Please type in the id of the quiz you want to join</label>
-						<input className="home--input" id="join-quiz"></input>
-						<p className="center">
-							<Link className="button" to="/app/start-quiz">Join quiz</Link>
-						</p>
-					</div>
-					{/* <button><Link to="/start-quiz">Home</Link></button> */}
 				</div>
 			</section>
 		)
