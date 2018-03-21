@@ -59,6 +59,7 @@ export function describeHttpTests (tests) {
 
 				const response = await nodeFetch(...request);
 				const { status, statusText, headers } = response;
+
 				const body = await response.json();
 
 				test.actualResponse = { status, statusText, headers, body };
@@ -162,7 +163,7 @@ export function describeHttpTests (tests) {
 											expect(actualValue).to.eql(expectedValue);
 										});
 									} else if (typeof expected === 'object') {
-										describeObject(object);
+										describeObject(expected);
 									} else {
 										it(`should equal "${expected}"`, () => {
 											expect(actualValue).to.eql(expected);

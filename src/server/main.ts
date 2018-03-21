@@ -1,4 +1,4 @@
-import { createRequestListener, HttpStatusCodes, all, AsyncReducerFunction } from '@jambon/core';
+import { createRequestListener, HttpStatusCodes, all, AsyncReducerFunction, lazy } from '@jambon/core';
 import { jsonParseRequestBody, jsonStringifyResponseBody, setResponseContentTypeHeaderToApplicationJson } from '@jambon/json';
 import { get, post, put, del, host, path } from '@jambon/router';
 
@@ -7,13 +7,12 @@ import { createServer } from 'http';
 import * as socketIO from 'socket.io';
 import * as uuid from 'uuid';
 import * as shortid from 'shortid';
+import { dir } from './static';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
 export async function main () {
 	try {
-		const env = process.env.NODE_ENV;
-
 		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
 		const db = await MongoClient.connect(mongodbConnectionString);
 		const quizzes = db.collection('quizzes');
@@ -333,45 +332,63 @@ export async function main () {
 			};
 		}
 
-		const server = createServer(
-			createRequestListener(
-				path('api',
-					post(jsonParseRequestBody),
-					put(jsonParseRequestBody),
-					katch(
-						path('quizzes$',
-							get(getQuizzes),
-							post(createQuiz),
+		const api = all(
+			post(jsonParseRequestBody),
+			put(jsonParseRequestBody),
+			katch(
+				path('quizzes$',
+					get(getQuizzes),
+					post(createQuiz),
+				),
+				path('quizzes',
+					path(':quizIdOrCode',
+						quizIdOrCode,
+						path('players$',
+							post(createQuizPlayer)
 						),
-						path('quizzes',
-							path(':quizIdOrCode',
-								quizIdOrCode,
-								path('players$',
-									post(createQuizPlayer)
-								),
-								path('players/:playerId',
-									playerId,
-									put(updateQuizPlayer),
-									del(deleteQuizPlayer)
-								),
-								path('teams$',
-									post(createQuizTeam)
-								),
-								path('rounds$',
-									post(createQuizRound)
-								),
-								path('rounds/current/buzzes',
-									post(createQuizRoundBuzz)
-								)
-							),
-							path(':quizIdOrCode$',
-								get(getQuiz),
-								del(deleteQuiz)
-							)
+						path('players/:playerId',
+							playerId,
+							put(updateQuizPlayer),
+							del(deleteQuizPlayer)
+						),
+						path('teams$',
+							post(createQuizTeam)
+						),
+						path('rounds$',
+							post(createQuizRound)
+						),
+						path('rounds/current/buzzes',
+							post(createQuizRoundBuzz)
 						)
 					),
-					setResponseContentTypeHeaderToApplicationJson,
-					jsonStringifyResponseBody
+					path(':quizIdOrCode$',
+						get(getQuiz),
+						del(deleteQuiz)
+					)
+				)
+			),
+			setResponseContentTypeHeaderToApplicationJson,
+			jsonStringifyResponseBody
+		);
+
+		const app = dir('app');
+		const www = dir('www');
+
+		const server = createServer(
+			createRequestListener(
+				katch(
+					log,
+					emptyResponse,
+					env('production',
+						host('api.qubu.io', api),
+						host('app.qubu.io', app),
+						host('qubu.io', www)
+					),
+					env(undefined,
+						path('api', api),
+						path('app', app),
+						path('www', www)
+					)
 				)
 			)
 		);
@@ -391,6 +408,29 @@ export async function main () {
 	}
 }
 
+function env (name : string, ...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
+	return async function env (context) {
+		if (process.env.NODE_ENV !== name) {
+			return context;
+		}
+
+		return all(...reducers)(context);
+	}
+}
+
+async function log (context) {
+	console.log(context.request.url);
+
+	return context;
+}
+
+async function emptyResponse (context) {
+	return  {
+		...context,
+		response: {}
+	}
+}
+
 function katch (...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
 	return async function katch (context) {
 		try {
@@ -402,8 +442,12 @@ function katch (...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
 				...context,
 				response: {
 					...context.response,
-					body: { message, stack },
-					statusCode: err.code || 500
+					headers: {
+						...(context.response || {}) .headers,
+						'Content-Type': 'text/html'
+					},
+					body: new Buffer(JSON.stringify({message, stack})),
+					statusCode: 500
 				}
 			}
 		}

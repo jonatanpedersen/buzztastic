@@ -7,10 +7,10 @@ const mongodb_1 = require("mongodb");
 const http_1 = require("http");
 const socketIO = require("socket.io");
 const uuid = require("uuid");
+const static_1 = require("./static");
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 async function main() {
     try {
-        const env = process.env.NODE_ENV;
         const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
         const db = await mongodb_1.MongoClient.connect(mongodbConnectionString);
         const quizzes = db.collection('quizzes');
@@ -264,7 +264,10 @@ async function main() {
                 }
             };
         }
-        const server = http_1.createServer(core_1.createRequestListener(router_1.path('api', router_1.post(json_1.jsonParseRequestBody), router_1.put(json_1.jsonParseRequestBody), katch(router_1.path('quizzes$', router_1.get(getQuizzes), router_1.post(createQuiz)), router_1.path('quizzes', router_1.path(':quizIdOrCode', quizIdOrCode, router_1.path('players$', router_1.post(createQuizPlayer)), router_1.path('players/:playerId', playerId, router_1.put(updateQuizPlayer), router_1.del(deleteQuizPlayer)), router_1.path('teams$', router_1.post(createQuizTeam)), router_1.path('rounds$', router_1.post(createQuizRound)), router_1.path('rounds/current/buzzes', router_1.post(createQuizRoundBuzz))), router_1.path(':quizIdOrCode$', router_1.get(getQuiz), router_1.del(deleteQuiz)))), json_1.setResponseContentTypeHeaderToApplicationJson, json_1.jsonStringifyResponseBody)));
+        const api = core_1.all(router_1.post(json_1.jsonParseRequestBody), router_1.put(json_1.jsonParseRequestBody), katch(router_1.path('quizzes$', router_1.get(getQuizzes), router_1.post(createQuiz)), router_1.path('quizzes', router_1.path(':quizIdOrCode', quizIdOrCode, router_1.path('players$', router_1.post(createQuizPlayer)), router_1.path('players/:playerId', playerId, router_1.put(updateQuizPlayer), router_1.del(deleteQuizPlayer)), router_1.path('teams$', router_1.post(createQuizTeam)), router_1.path('rounds$', router_1.post(createQuizRound)), router_1.path('rounds/current/buzzes', router_1.post(createQuizRoundBuzz))), router_1.path(':quizIdOrCode$', router_1.get(getQuiz), router_1.del(deleteQuiz)))), json_1.setResponseContentTypeHeaderToApplicationJson, json_1.jsonStringifyResponseBody);
+        const app = static_1.dir('app');
+        const www = static_1.dir('www');
+        const server = http_1.createServer(core_1.createRequestListener(katch(log, emptyResponse, env('production', router_1.host('api.qubu.io', api), router_1.host('app.qubu.io', app), router_1.host('qubu.io', www)), env(undefined, router_1.path('api', api), router_1.path('app', app), router_1.path('www', www)))));
         const io = socketIO(server);
         const port = process.env.PORT || 1432;
         server.listen(port, () => {
@@ -277,6 +280,24 @@ async function main() {
     }
 }
 exports.main = main;
+function env(name, ...reducers) {
+    return async function env(context) {
+        if (process.env.NODE_ENV !== name) {
+            return context;
+        }
+        return core_1.all(...reducers)(context);
+    };
+}
+async function log(context) {
+    console.log(context.request.url);
+    return context;
+}
+async function emptyResponse(context) {
+    return {
+        ...context,
+        response: {}
+    };
+}
 function katch(...reducers) {
     return async function katch(context) {
         try {
@@ -288,8 +309,12 @@ function katch(...reducers) {
                 ...context,
                 response: {
                     ...context.response,
-                    body: { message, stack },
-                    statusCode: err.code || 500
+                    headers: {
+                        ...(context.response || {}).headers,
+                        'Content-Type': 'text/html'
+                    },
+                    body: new Buffer(JSON.stringify({ message, stack })),
+                    statusCode: 500
                 }
             };
         }

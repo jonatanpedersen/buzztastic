@@ -241,6 +241,32 @@ const tests = [
 			status: 400,
 			statusText: 'Bad Request'
 		}
+	},
+	{
+		skip: true,
+		id: 'getApp',
+		description: 'get app',
+		request: {
+			method: 'GET',
+			url: `${BASE_URL}/app/`
+		},
+		response: {
+			status: 200,
+			statusText: 'OK'
+		}
+	},
+	{
+		skip: true,
+		id: 'getWww',
+		description: 'get www',
+		request: {
+			method: 'GET',
+			url: `${BASE_URL}/www/`
+		},
+		response: {
+			status: 200,
+			statusText: 'OK'
+		}
 	}
 ];
 
