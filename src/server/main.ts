@@ -367,6 +367,7 @@ export async function main () {
 						del(deleteQuiz)
 					)
 				),
+				log,
 				def(setStatusCode(400))
 			),
 			setResponseContentTypeHeaderToApplicationJson,
