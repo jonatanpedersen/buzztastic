@@ -6,15 +6,11 @@ const socket = io();
 export default class Quiz extends Component {
 	constructor() {
 		super();
-		this.state = {};
-		this.newRound = this.newRound.bind(this);
-	}
-
-	getInitialState() {
-		return {
+		this.state = {
 			rounds: [],
 			quizId: ''
 		};
+		this.newRound = this.newRound.bind(this);
 	}
 
 	async componentDidMount() {
