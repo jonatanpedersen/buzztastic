@@ -61,8 +61,16 @@ export default class Quiz extends Component {
 					<h1>Quiz code: {quizCode}</h1>
 					<label id="rounds" >Round: {numberOfRounds}</label>
 					<input type="hidden" value={quizId} id="quizId" />
+					<ul className="buzzer-list animated bounceIn">
+						<li className="buzzer-list__item">
+							<span className="buzzer__name">Buzzer test 1</span>
+						</li>
+						<li className="buzzer-list__item">
+							<span class="buzzer__name">Buzzer test 2</span>
+						</li>
+					</ul>
 					<button className="button new-round-button" onClick={this.newRound}>Next round</button>
-					<button className="button button--danger end-quiz-button">End quiz</button>
+					<Link className="button button--danger end-quiz-button" to="/app" >End quiz</Link>
 				</div>
 			</section>
 		)
