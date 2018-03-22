@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { Link, Redirect } from 'react-router-dom';
 
 export default class Home extends Component {
 	constructor() {
@@ -7,7 +6,7 @@ export default class Home extends Component {
 		this.state = {};
 		this.createQuiz = this.createQuiz.bind(this);
 	}
-	createQuiz(event) {
+	async createQuiz(event) {
 		event.preventDefault();
 		const name = this.state.name;
 
@@ -20,27 +19,24 @@ export default class Home extends Component {
 
 		if (name !== undefined) {
 			const quiz = { "name": name }
-			
-			cobst fetch('/api/quizzes', {
+
+			const quizId = await fetch('/api/quizzes', {
 				body: JSON.stringify(quiz),
 				method: "POST",
-				headers: new Headers(
-					{
-						'Content-Type': 'application/json'
-					}
-				)
+				headers: new Headers({ 'Content-Type': 'application/json' })
 			})
 				.then(postResponse => postResponse.json())
-				.then((json) => {
-					const quizId = json.quizId;
-					fetch(`/api/quizzes/${quizId}`, { method: 'GET' })
-						.then(getResponse => getResponse.json())
-						.then((json) => this.props.history.push(`/app/start-quiz/${quizId}/${json.name}/${json.code}`))
-						.catch(err => console.error(err));
-					// then(json => this.props.history.push(`/app/start-quiz/${quizId}`));
-					// window.location = `/app/start-quiz/${quizId}`;
-				})
-				.catch((err) => console.error(err))
+				.then((json) => json.quizId)
+				.catch(err => console.error(err));
+			console.log('Quiz id: ', quizId);
+			const quizInfo = await fetch(`/api/quizzes/${quizId}`, { method: 'GET' })
+				.then(getResponse => getResponse.json())
+				.catch(err => console.error(err));
+
+			console.log('Quiz info: ', quizInfo);
+			const quizName = quizInfo.name;
+			const quizCode = quizInfo.code;
+			this.props.history.push(`/app/start-quiz/${quizId}/${quizName}/${quizCode}`);
 		}
 	}
 	render() {
@@ -53,7 +49,7 @@ export default class Home extends Component {
 						<label for="start-quiz">Please type in the name of your new quiz</label>
 						<input id="create-quiz" value={this.state.name} onChange={event => this.setState({ name: event.target.value })}></input>
 						<p className="center">
-							<button className="button" onClick={this.createQuiz}>Start quiz</button>
+							<button className="button button--green" onClick={this.createQuiz}>Start quiz</button>
 						</p>
 					</div>
 				</div>

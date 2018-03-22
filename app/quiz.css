@@ -1,3 +1,6 @@
 p.quiz-info {
 	font-size: 1.5rem;
 }
+
+.new-round-button {position: absolute; bottom: 2rem; right: 2rem; background-color: rgba(0,0,0,.1); border-width: 0; padding: 1rem 2rem; border-radius: 2px; color: #fff; font-size: 1rem;}
+.end-quiz-button {position: absolute; bottom: 2rem; left: 2rem; padding: 1rem 2rem;}
