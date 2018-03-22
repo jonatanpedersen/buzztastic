@@ -2,7 +2,7 @@ doctype html
 html
 	head
 		meta(charset="UTF-8")
-		base(href=router.path + '/')
+		base(href=`${router && router.path}/`)
 		title QuBu - The buzztastic quiz buzzer.
 		style.
 			html, .body, .main { height: 100%}
