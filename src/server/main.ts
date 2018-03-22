@@ -366,16 +366,19 @@ export async function main () {
 						get(getQuiz),
 						del(deleteQuiz)
 					)
-				)
+				),
+				def(setStatusCode(400))
 			),
 			setResponseContentTypeHeaderToApplicationJson,
 			jsonStringifyResponseBody
 		);
 
-		const app = dir('app');
+		const app = [
+			dir('app'),
+			def(pug('./app/index.pug'))
+		];
 		const www = [
 			dir('www'),
-			log,
 			def(pug('./www/index.pug'))
 		];
 
@@ -384,12 +387,12 @@ export async function main () {
 				trycatch(
 					env('production',
 						host('api.qubu.io', api),
-						host('app.qubu.io', app),
+						host('app.qubu.io', ...app),
 						host('qubu.io', ...www)
 					),
 					env(undefined,
 						path('api', api),
-						path('app', app),
+						path('app', ...app),
 						path('www', ...www)
 					)
 				),
