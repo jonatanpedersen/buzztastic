@@ -1,4 +1,4 @@
-import { createRequestListener, HttpStatusCodes, all, AsyncReducerFunction, lazy } from '@jambon/core';
+import { createRequestListener, HttpStatusCodes, all, AsyncReducerFunction, lazy, HttpContext } from '@jambon/core';
 import { jsonParseRequestBody, jsonStringifyResponseBody, setResponseContentTypeHeaderToApplicationJson } from '@jambon/json';
 import { get, post, put, del, host, path } from '@jambon/router';
 
@@ -8,6 +8,7 @@ import * as socketIO from 'socket.io';
 import * as uuid from 'uuid';
 import * as shortid from 'shortid';
 import { dir } from './static';
+import { pug } from './pug';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
@@ -335,7 +336,7 @@ export async function main () {
 		const api = all(
 			post(jsonParseRequestBody),
 			put(jsonParseRequestBody),
-			katch(
+			trycatch(
 				path('quizzes$',
 					get(getQuizzes),
 					post(createQuiz),
@@ -372,24 +373,27 @@ export async function main () {
 		);
 
 		const app = dir('app');
-		const www = dir('www');
+		const www = [
+			dir('www'),
+			log,
+			def(pug('./www/index.pug'))
+		];
 
 		const server = createServer(
 			createRequestListener(
-				katch(
-					log,
-					emptyResponse,
+				trycatch(
 					env('production',
 						host('api.qubu.io', api),
 						host('app.qubu.io', app),
-						host('qubu.io', www)
+						host('qubu.io', ...www)
 					),
 					env(undefined,
 						path('api', api),
 						path('app', app),
-						path('www', www)
+						path('www', ...www)
 					)
-				)
+				),
+				def(setStatusCode(404))
 			)
 		);
 
@@ -419,9 +423,31 @@ function env (name : string, ...reducers : AsyncReducerFunction[]) : AsyncReduce
 }
 
 async function log (context) {
-	console.log(context.request.url);
+	console.log(context);
 
 	return context;
+}
+
+function setStatusCode (statusCode) : AsyncReducerFunction {
+	return async function setStatusCode (context) {
+		return {
+			...context,
+			response: {
+				...context.response,
+				statusCode: statusCode
+			}
+		}
+	}
+}
+
+function def (...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
+	return async function def (context) {
+		if (context.response !== undefined) {
+			return context;
+		}
+
+		return all(...reducers)(context);
+	}
 }
 
 async function emptyResponse (context) {
@@ -431,8 +457,8 @@ async function emptyResponse (context) {
 	}
 }
 
-function katch (...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
-	return async function katch (context) {
+function trycatch (...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
+	return async function trycatch (context) {
 		try {
 			return await all(...reducers)(context);
 		} catch (err) {
@@ -447,7 +473,7 @@ function katch (...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
 						'Content-Type': 'text/html'
 					},
 					body: new Buffer(JSON.stringify({message, stack})),
-					statusCode: 500
+					statusCode: err.code || 500
 				}
 			}
 		}

@@ -18,10 +18,12 @@ function dir(path) {
                 break;
             }
             catch (err) {
-                console.log(err, file);
             }
         }
         ;
+        if (!body) {
+            return context;
+        }
         return {
             ...context,
             response: {

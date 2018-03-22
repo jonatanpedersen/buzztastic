@@ -21,9 +21,12 @@ export function dir (path : string) : AsyncReducerFunction {
 				body = readFileSync(file)
 				break;
 			} catch (err) {
-				console.log(err, file)
 			}
 		};
+
+		if (!body) {
+			return context;
+		}
 
 		return {
 			...context,

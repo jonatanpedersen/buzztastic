@@ -8,6 +8,7 @@ const http_1 = require("http");
 const socketIO = require("socket.io");
 const uuid = require("uuid");
 const static_1 = require("./static");
+const pug_1 = require("./pug");
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 async function main() {
     try {
@@ -264,10 +265,14 @@ async function main() {
                 }
             };
         }
-        const api = core_1.all(router_1.post(json_1.jsonParseRequestBody), router_1.put(json_1.jsonParseRequestBody), katch(router_1.path('quizzes$', router_1.get(getQuizzes), router_1.post(createQuiz)), router_1.path('quizzes', router_1.path(':quizIdOrCode', quizIdOrCode, router_1.path('players$', router_1.post(createQuizPlayer)), router_1.path('players/:playerId', playerId, router_1.put(updateQuizPlayer), router_1.del(deleteQuizPlayer)), router_1.path('teams$', router_1.post(createQuizTeam)), router_1.path('rounds$', router_1.post(createQuizRound)), router_1.path('rounds/current/buzzes', router_1.post(createQuizRoundBuzz))), router_1.path(':quizIdOrCode$', router_1.get(getQuiz), router_1.del(deleteQuiz)))), json_1.setResponseContentTypeHeaderToApplicationJson, json_1.jsonStringifyResponseBody);
+        const api = core_1.all(router_1.post(json_1.jsonParseRequestBody), router_1.put(json_1.jsonParseRequestBody), trycatch(router_1.path('quizzes$', router_1.get(getQuizzes), router_1.post(createQuiz)), router_1.path('quizzes', router_1.path(':quizIdOrCode', quizIdOrCode, router_1.path('players$', router_1.post(createQuizPlayer)), router_1.path('players/:playerId', playerId, router_1.put(updateQuizPlayer), router_1.del(deleteQuizPlayer)), router_1.path('teams$', router_1.post(createQuizTeam)), router_1.path('rounds$', router_1.post(createQuizRound)), router_1.path('rounds/current/buzzes', router_1.post(createQuizRoundBuzz))), router_1.path(':quizIdOrCode$', router_1.get(getQuiz), router_1.del(deleteQuiz)))), json_1.setResponseContentTypeHeaderToApplicationJson, json_1.jsonStringifyResponseBody);
         const app = static_1.dir('app');
-        const www = static_1.dir('www');
-        const server = http_1.createServer(core_1.createRequestListener(katch(log, emptyResponse, env('production', router_1.host('api.qubu.io', api), router_1.host('app.qubu.io', app), router_1.host('qubu.io', www)), env(undefined, router_1.path('api', api), router_1.path('app', app), router_1.path('www', www)))));
+        const www = [
+            static_1.dir('www'),
+            log,
+            def(pug_1.pug('./www/index.pug'))
+        ];
+        const server = http_1.createServer(core_1.createRequestListener(trycatch(env('production', router_1.host('api.qubu.io', api), router_1.host('app.qubu.io', app), router_1.host('qubu.io', ...www)), env(undefined, router_1.path('api', api), router_1.path('app', app), router_1.path('www', ...www))), def(setStatusCode(404))));
         const io = socketIO(server);
         const port = process.env.PORT || 1432;
         server.listen(port, () => {
@@ -289,8 +294,27 @@ function env(name, ...reducers) {
     };
 }
 async function log(context) {
-    console.log(context.request.url);
+    console.log(context);
     return context;
+}
+function setStatusCode(statusCode) {
+    return async function setStatusCode(context) {
+        return {
+            ...context,
+            response: {
+                ...context.response,
+                statusCode: statusCode
+            }
+        };
+    };
+}
+function def(...reducers) {
+    return async function def(context) {
+        if (context.response !== undefined) {
+            return context;
+        }
+        return core_1.all(...reducers)(context);
+    };
 }
 async function emptyResponse(context) {
     return {
@@ -298,8 +322,8 @@ async function emptyResponse(context) {
         response: {}
     };
 }
-function katch(...reducers) {
-    return async function katch(context) {
+function trycatch(...reducers) {
+    return async function trycatch(context) {
         try {
             return await core_1.all(...reducers)(context);
         }
@@ -314,7 +338,7 @@ function katch(...reducers) {
                         'Content-Type': 'text/html'
                     },
                     body: new Buffer(JSON.stringify({ message, stack })),
-                    statusCode: 500
+                    statusCode: err.code || 500
                 }
             };
         }
