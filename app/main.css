@@ -10,7 +10,7 @@
 	/* Safari, Opera, and Chrome */
 	display:-webkit-box;
 	-webkit-box-pack:center;
-	-webkit-box-align:center;
+	/* -webkit-box-align:center; */
 	/* W3C */
 	display:box;
 	box-pack:center;

@@ -43,7 +43,6 @@ export default class Home extends Component {
 		return (
 			<section class="section--home">
 				<div class="home">
-					<h1 className="center">Buzztastic</h1>
 					<div>
 						<h2>Create new quiz</h2>
 						<label for="start-quiz">Please type in the name of your new quiz</label>

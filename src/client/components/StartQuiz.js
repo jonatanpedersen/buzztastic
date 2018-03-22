@@ -7,14 +7,20 @@ export default class StartQuiz extends Component {
 		this.startQuiz = this.startQuiz.bind(this);
 	}
 
-	async startQuiz(event) {
+	startQuiz(event) {
 		const quizId = document.getElementById('quizId').value;
+		const quizCode = document.getElementById('quizCode').value;
 
-		await fetch(`/api/quizzes/${quizId}/rounds`, {
+		fetch(`/api/quizzes/${quizCode}/rounds`, {
 			method: 'POST',
-			headers: new Headers({ 'Content-Type': 'application/json' })
-		}).catch(err => console.error(err));
-		this.props.history.push(`/app/quiz/${quizId}`);
+			body: JSON.stringify({}),
+			headers: {
+				'content-type': 'application/json',
+				'Accept': 'application/json'
+			}
+		})
+			.then(() => this.props.history.push(`/app/quiz/${quizId}/${quizCode}`))
+			.catch(err => console.error(err));
 	}
 	render() {
 		const quizId = this.props.match.params.quizId;
@@ -28,6 +34,7 @@ export default class StartQuiz extends Component {
 					<p className="quiz-info">Quiz code: {quizCode}</p>
 					<p className="center"><button className="button button--green" onClick={this.startQuiz}>Start quiz</button></p>
 					<input type="hidden" value={quizId} id="quizId" />
+					<input type="hidden" value={quizCode} id="quizCode" />
 				</div>
 			</section>
 		)
