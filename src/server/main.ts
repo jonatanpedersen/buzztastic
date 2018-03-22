@@ -48,7 +48,7 @@ export async function main () {
 				response: {
 					...context.response,
 					body: { quizId },
-					statusCode: HttpStatusCodes.CREATED
+					statusCode: HttpStatusCodes.OK
 				}
 			};
 		}
@@ -104,7 +104,7 @@ export async function main () {
 				response: {
 					...context.response,
 					body: { quizId, playerId },
-					statusCode: HttpStatusCodes.CREATED
+					statusCode: HttpStatusCodes.OK
 				}
 			};
 		}
@@ -208,7 +208,7 @@ export async function main () {
 				response: {
 					...context.response,
 					body: { quizId, roundId },
-					statusCode: HttpStatusCodes.CREATED
+					statusCode: HttpStatusCodes.OK
 				}
 			};
 		}
@@ -269,7 +269,7 @@ export async function main () {
 				response: {
 					...context.response,
 					body: { quizId, roundId, buzzId },
-					statusCode: HttpStatusCodes.CREATED
+					statusCode: HttpStatusCodes.OK
 				}
 			};
 		}
@@ -328,7 +328,7 @@ export async function main () {
 				response: {
 					...context.response,
 					body: { quizId, teamId },
-					statusCode: HttpStatusCodes.CREATED
+					statusCode: HttpStatusCodes.OK
 				}
 			};
 		}
