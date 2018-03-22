@@ -1,3 +1,4 @@
---require @std/esm
+--require ts-node/register
+--watch-extensions ts,tsx
 --exit
-test/**/*.spec.mjs
+test/**/*.spec.{ts,tsx}
