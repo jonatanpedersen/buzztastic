@@ -10,15 +10,25 @@ export default class Home extends Component {
 	createQuiz(event) {
 		event.preventDefault();
 		const name = this.state.name;
-		console.log('Name: ', name);
+
+		if (name.trim() === '') {
+			console.error('quiz name not found');
+			const quizInput = document.getElementById('create-quiz');
+			quizInput.value = '';
+			return alert('Quiz name have to include letters');
+		}
+
 		if (name !== undefined) {
 			const quiz = { "name": name }
-			fetch('/api/quizzes', {
+			
+			cobst fetch('/api/quizzes', {
 				body: JSON.stringify(quiz),
 				method: "POST",
-				headers: new Headers({
-					'Content-Type': 'application/json'
-				})
+				headers: new Headers(
+					{
+						'Content-Type': 'application/json'
+					}
+				)
 			})
 				.then(postResponse => postResponse.json())
 				.then((json) => {
@@ -29,7 +39,8 @@ export default class Home extends Component {
 						.catch(err => console.error(err));
 					// then(json => this.props.history.push(`/app/start-quiz/${quizId}`));
 					// window.location = `/app/start-quiz/${quizId}`;
-				}).catch((err) => console.error(err))
+				})
+				.catch((err) => console.error(err))
 		}
 	}
 	render() {
