@@ -1,5 +1,7 @@
 import React, { Component } from 'react'
 
+console.log('Home file!');
+
 export default class Home extends Component {
 	constructor() {
 		super();
