@@ -1,34 +1,13 @@
-import React from 'react';
-import {render} from 'react-dom';
+import React from 'react'
+import { render } from 'react-dom'
+import { BrowserRouter } from 'react-router-dom'
+import App from './components/App';
 
-async function main () {
-	const quizzes = await fetch('/api/quizzes')
-		.then(response => response.json());
+console.log('RENDERING!');
 
-	const socket = io();
+render((
+	<BrowserRouter>
+		<App />
+	</BrowserRouter>
+), document.getElementById('root'));
 
-	class App extends React.Component {
-		constructor () {
-			super();
-			this.state = {buttonsPressed: {}}
-		}
-
-		componentDidMount () {
-			const {socket} = this.props;
-
-			socket.on('quiz.created', buttonPress => {
-				console.log('quiz.created');
-			});
-		}
-
-		render () {
-			return null;
-		}
-	}
-
-	const mainElement = document.querySelector('.main');
-
-	render(React.createElement(App, {socket, quizzes}), mainElement);
-}
-
-main();

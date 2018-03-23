@@ -8,10 +8,11 @@ import uuid from 'uuid';
 import compression from 'compression';
 import shortid from 'shortid';
 import vhost from 'vhost';
+import path from 'path';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
-export async function main () {
+export async function main() {
 	try {
 		const env = process.env.NODE_ENV;
 
@@ -60,14 +61,14 @@ export async function main () {
 
 		api.param('quizIdOrCode', async (req, res, next, quizIdOrCode) => {
 			try {
-				res.locals.quiz = withoutId(await quizzes.findOne({ $or: [ { quizId: quizIdOrCode }, { code: quizIdOrCode } ] }));
+				res.locals.quiz = withoutId(await quizzes.findOne({ $or: [{ quizId: quizIdOrCode }, { code: quizIdOrCode }] }));
 
 				if (!res.locals.quiz) {
 					throw new NotFoundHttpError('Quiz Not Found');
 				}
 
 				next();
-			} catch(err) {
+			} catch (err) {
 				next(err);
 			}
 		});
@@ -138,12 +139,14 @@ export async function main () {
 
 			await quizzes.updateOne(
 				{ quizId, 'players.playerId': playerId },
-				{ $set: {
-						'players.$.name' : name,
-						'players.$.teamId' : teamId,
-						'players.$.updated' : updated,
+				{
+					$set: {
+						'players.$.name': name,
+						'players.$.teamId': teamId,
+						'players.$.updated': updated,
 						updated,
-				} }
+					}
+				}
 			).then(throwIfNotUpdated);
 
 			io.emit('quiz.player.updated', { quizId, playerId }, { for: 'everyone' });
@@ -293,6 +296,15 @@ export async function main () {
 		const app = express.Router();
 		app.use(express.static('app'));
 
+		app.get('*', (req, res) => {
+			const indexPath = path.join(path.resolve(), 'src', 'client', 'index.html');
+			res.sendFile(indexPath, (err) => {
+				if (err) {
+					res.status(500).send(err)
+				}
+			})
+		});
+
 		const www = express.Router();
 		www.use(express.static('www'));
 
@@ -330,32 +342,32 @@ export async function main () {
 	}
 }
 
-async function throwIfNotUpdated (doc) {
+async function throwIfNotUpdated(doc) {
 	if (doc.modifiedCount === 0) {
 		throw new BadRequestHttpError();
 	}
 }
 
 class HttpError extends Error {
-	constructor (code, message) {
+	constructor(code, message) {
 		super(message);
 		this.code = code;
 	}
 }
 
 class NotFoundHttpError extends HttpError {
-	constructor (message) {
+	constructor(message) {
 		super(404, message);
 	}
 }
 
 class BadRequestHttpError extends HttpError {
-	constructor (message) {
+	constructor(message) {
 		super(400, message);
 	}
 }
 
-function createQuizCode () {
+function createQuizCode() {
 	var code = "";
 	const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
@@ -367,8 +379,8 @@ function createQuizCode () {
 }
 
 
-function withoutId (document) {
-	const {_id, ...rest} = document;
+function withoutId(document) {
+	const { _id, ...rest } = document;
 
 	return rest;
 }

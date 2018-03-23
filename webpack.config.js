@@ -1,10 +1,12 @@
 const webpack = require('webpack');
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackPugPlugin = require('html-webpack-pug-plugin');
 
 const HtmlWebpackPluginConfig = new HtmlWebpackPlugin({
-	template: './src/client/index.html',
-	filename: 'index.html',
+	template: './src/client/index.pug',
+	filetype: 'pug',
+	filename: 'index.pug',
 	inject: 'body'
 })
 
@@ -22,6 +24,7 @@ module.exports = {
 	devtool: 'hidden',
 	plugins: [
 		HtmlWebpackPluginConfig,
+		new HtmlWebpackPugPlugin(),
 		new webpack.DefinePlugin({
 			'process.env.NODE_ENV': '"production"'
 		}),

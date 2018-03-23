@@ -1,22 +1,21 @@
 doctype html
 html
 	head
-		meta(charset="UTF-8")
+		meta(charset='utf-8')
+		title React App Setup
 		base(href=`${router && router.path || ''}/`)
-		title QuBu - The buzztastic quiz buzzer.
+		link(href='animate.css', rel='stylesheet', type='text/css')
+		link(href='home.css', rel='stylesheet', type='text/css')
+		link(href='main.css', rel='stylesheet', type='text/css')
+		link(href='quiz.css', rel='stylesheet', type='text/css')
+		link(href='nav.css', rel='stylesheet', type='text/css')
+		link(href='buzzer.css', rel='stylesheet', type='text/css')
 		style.
-			html, .body, .main { height: 100%}
-			.main { display: flex; justify-content: center; align-items: center; }
-			.rotate { animation: rotation 2s infinite linear; }
-			@keyframes rotation {
-				from {
-					transform: rotate(0deg);
-				}
-				to {
-					transform: rotate(359deg);
-				}
-			}
-	body.body
-		main.main
-			h1
-				img.rotate(src="splash_3.png" alt="QuBu - The buzztastic quiz buzzer." title="QuBu")
+			html, body {padding: 0; margin: 0; height: 100%}
+			body {background-color: #34495E}
+	body
+		.top-nav
+			img.top-nav-brand(src='images/splash_3.png')
+		#root
+		script(src='/socket.io/socket.io.js')
+		script(type="text/javascript" src="index.js")
