@@ -26,16 +26,20 @@ export default class Home extends Component {
 
 			const quizId = await fetch(`${baseApiUrl}/quizzes`, {
 				body: JSON.stringify(quiz),
-				method: "POST",
+				method: 'POST',
 				headers: {
 					'content-type': 'application/json',
-					'Accept': 'application/json'
+					'Accept': 'application/json',
+					'Access-Control-Allow-Origin': '*'
 				}
 			})
 				.then(postResponse => postResponse.json())
 				.then((json) => json.quizId)
 				.catch(err => console.error(err));
 			console.log('Quiz id: ', quizId);
+			if (!quizId) {
+				return;
+			}
 			const quizInfo = await fetch(`${baseApiUrl}/quizzes/${quizId}`, { method: 'GET' })
 				.then(getResponse => getResponse.json())
 				.catch(err => console.error(err));
