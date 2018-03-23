@@ -10,7 +10,9 @@
     "nodemon": "nodemon --harmony_async_iteration --experimental-modules",
     "test": "mocha --harmony_async_iteration",
     "webpack": "webpack -p",
-    "webpack-watch": "webpack -d --watch"
+    "webpack-watch": "webpack -d --watch",
+    "www-webpack": "webpack --config www.webpack.config.js -p -d",
+    "www-webpack-watch": "webpack --config www.webpack.config.js -d --watch"
   },
   "repository": {
     "type": "git",
