@@ -3,12 +3,59 @@ import React, { Component } from 'react';
 export default class StartQuiz extends Component {
 	constructor() {
 		super();
-		this.state = {};
+		this.state = { };
 		this.startQuiz = this.startQuiz.bind(this);
+		this.allowQuizStart = this.allowQuizStart.bind(this);
+	}
+
+	componentDidMount() {
+		this.setState({playerCreated: false, playerUpdated: false, teamCreated: false})
+
+		const quizCode = this.props.match.params.quizCode;
+		fetch(`${baseApiUrl}/quizzes/${quizCode}`, { method: 'GET' })
+			.then(response => response.json())
+			.then((quiz) => {
+				const { players, teams } = quiz;
+				if (teams && players && players[0].teamId) {
+					this.setState({
+						playerCreated: true, playerUpdated: true, teamCreated: true
+					});
+					this.allowQuizStart();
+				}
+			});
+		const socket = io();
+		socket.on('quiz.player.created', playerCreated => {
+			this.setState({
+				playerCreated: true
+			});
+			this.allowQuizStart();
+		});
+
+		socket.on('quiz.player.updated', playerUpdated => {
+			this.setState({
+				playerUpdated: true
+			});
+			this.allowQuizStart();
+		});
+
+		socket.on('quiz.team.created', teamCreated => {
+			this.setState({
+				teamCreated: true
+			});
+			this.allowQuizStart();
+		});
+	}
+
+	allowQuizStart() {
+		const { playerUpdated, teamCreated, playerCreated } = this.state
+
+		if (playerUpdated && teamCreated && playerCreated) {
+			document.getElementById('btn-start-quiz').classList.remove('hidden');
+		}
 	}
 
 	startQuiz(event) {
-		const quizCode = document.getElementById('quizCode').value;
+		const quizCode = this.props.match.params.quizCode;
 
 		fetch(`${baseApiUrl}/quizzes/${quizCode}/rounds`, {
 			method: 'POST',
@@ -26,8 +73,8 @@ export default class StartQuiz extends Component {
 				<div className="start-quiz-placeholder">
 					<p className="quiz-info">Quiz name: {quizName}</p>
 					<p className="quiz-info">Quiz code: {quizCode}</p>
-					<p className="center"><button className="button button--green" onClick={this.startQuiz}>Start quiz</button></p>
-					<input type="hidden" value={quizCode} id="quizCode" />
+					<p>Waiting for teams to be created, and players to join teams</p>
+					<p className="center"><button id="btn-start-quiz" className="button button--green hidden" onClick={this.startQuiz}>Start quiz</button></p>
 				</div>
 			</section>
 		)
