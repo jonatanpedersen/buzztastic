@@ -340,7 +340,7 @@ async function main() {
             static_1.dir('www'),
             def(pug_1.pug('./www/index.pug'))
         ];
-        const server = http_1.createServer(core_1.createRequestListener(trycatch(env('production', router_1.host('api.qubu.io', api), router_1.host('app.qubu.io', ...app), router_1.host('qubu.io', ...www)), env(undefined, router_1.path('api', api), router_1.path('app', ...app), router_1.path('www', ...www))), def(setStatusCode(404))));
+        const server = http_1.createServer(core_1.createRequestListener(trycatch(env('production', router_1.host('api.qubu.io', api), router_1.host('app.qubu.io', ...app), router_1.host('qubu.io', ...www)), env(undefined, router_1.path('api', api), router_1.path('app', ...app), router_1.path('www', ...www)), setCrossOrigin()), def(setStatusCode(404))));
         const io = socketIO(server);
         const port = process.env.PORT || 1432;
         server.listen(port, async () => {
@@ -385,6 +385,24 @@ function setStatusCode(statusCode) {
             response: {
                 ...context.response,
                 statusCode: statusCode
+            }
+        };
+    };
+}
+function setCrossOrigin() {
+    return async function setCrossOrigin(context) {
+        const origin = context.request.headers['origin'] || '*';
+        return {
+            ...context,
+            response: {
+                ...context.response,
+                headers: {
+                    ...context.response.headers,
+                    'Access-Control-Allow-Origin': origin,
+                    'Access-Control-Allow-Credentials': 'true',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
+                    'Access-Control-Allow-Headers': '*',
+                }
             }
         };
     };

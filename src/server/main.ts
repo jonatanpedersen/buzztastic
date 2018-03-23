@@ -479,7 +479,8 @@ export async function main () {
 						path('api', api),
 						path('app', ...app),
 						path('www', ...www)
-					)
+					),
+					setCrossOrigin()
 				),
 				def(setStatusCode(404))
 			)
@@ -545,6 +546,26 @@ function setStatusCode (statusCode) : AsyncReducerFunction {
 			response: {
 				...context.response,
 				statusCode: statusCode
+			}
+		}
+	}
+}
+
+function setCrossOrigin () : AsyncReducerFunction {
+	return async function setCrossOrigin (context) {
+		const origin = context.request.headers['origin'] || '*';
+
+		return {
+			...context,
+			response: {
+				...context.response,
+				headers: { 
+					...context.response.headers,
+					'Access-Control-Allow-Origin': origin,
+					'Access-Control-Allow-Credentials': 'true',
+					'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
+					'Access-Control-Allow-Headers': '*',
+				}
 			}
 		}
 	}
