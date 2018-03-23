@@ -4,38 +4,32 @@ import { Link } from 'react-router-dom';
 export default class Quiz extends Component {
 	constructor(props) {
 		super(props);
-		this.state = {
-			rounds: [],
-			quizId: '',
-			quizCode: ''
-		};
+		this.state = {buzzers: []};
 		this.newRound = this.newRound.bind(this);
 	}
 
 	componentDidMount() {
-		console.log(this.props);
-		const quizId = this.props.match.params.quizId;
 		const quizCode = this.props.match.params.quizCode;
-		fetch(`/api/quizzes/${quizId}`, { method: 'GET' })
+		fetch(`/api/quizzes/${quizCode}`, { method: 'GET' })
 			.then((response) => response.json())
-			.then(json => {
-				this.setState({
-					rounds: json.rounds,
-					quizId,
-					quizCode
-				});
+			.then(quiz => {
+				return this.setState({ quiz });
 			});
 		const socket = io();
-		socket.on('quiz.round.buzzes.created', buzzed => {
-			console.log('buzz created! SOCKET WORKS');
-			console.log('Buzzed: ', buzzed);
+		socket.on('quiz.round.buzz.created', buzzed => {
+			const { quiz } = this.state;
+			const { playerId, teamId } = buzzed.data;
+			const team = this.state.quiz.teams.find(team => team.teamId === teamId);
+			const { name: teamName } = team;
+			const player = this.state.quiz.players.find(player => player.playerId = playerId);
+			const { name: playerName } = player;
+			const { buzzers } = this.state;
+			this.setState({ buzzers: [...buzzers, { playerName, teamName }] });
 		});
 	}
 
 	async newRound() {
-		console.log('New round called...');
-		const quizId = this.state.quizId;
-		const quizCode = this.state.quizCode;
+		const quizCode = this.props.match.params.quizCode;
 		await fetch(`/api/quizzes/${quizCode}/rounds`, {
 			method: 'POST',
 			body: JSON.stringify({}),
@@ -44,33 +38,32 @@ export default class Quiz extends Component {
 				'Accept': 'application/json'
 			}
 		});
-		fetch(`/api/quizzes/${quizId}`, { method: 'GET' })
+		fetch(`/api/quizzes/${quizCode}`, { method: 'GET' })
 			.then(response => response.json())
-			.then(json => {
+			.then(quiz => {
 				this.setState({
-					rounds: json.rounds
+					quiz
 				});
 			}).catch((err) => console.error(err));
 	}
 
 	render() {
-		const numberOfRounds = this.state.rounds ? this.state.rounds.length : 1;
-		const quizCode = this.state.quizCode;
-		const quizId = '';
+		const { quiz, buzzers } = this.state;
+		const quizCode = this.props.match.params.quizCode;
+		const numberOfRounds = quiz && quiz.rounds ? quiz.rounds.length : 0;
 
 		return (
 			<section className="section--quiz">
 				<div>
 					<h1>Quiz code: {quizCode}</h1>
 					<label id="rounds" >Round: {numberOfRounds}</label>
-					<input type="hidden" value={quizId} id="quizId" />
 					<ul className="buzzer-list animated bounceIn">
-						<li className="buzzer-list__item">
-							<span className="buzzer__name">Buzzer test 1</span>
-						</li>
-						<li className="buzzer-list__item">
-							<span class="buzzer__name">Buzzer test 2</span>
-						</li>
+						{buzzers.map(buzzer =>
+							<li className="buzzer-list__item">
+								<span className="buzzer__name">{buzzer.playerName}</span>
+								<span className="buzzer__name">{buzzer.teamName}</span>
+							</li>
+						)}
 					</ul>
 					<button className="button new-round-button" onClick={this.newRound}>Next round</button>
 					<Link className="button button--danger end-quiz-button" to="/app" >End quiz</Link>
