@@ -27,7 +27,8 @@ class App extends React.Component {
 	}
 
 	update () {
-		fetch('/api/stats', { method: 'GET' })
+		const base = document.location.href.indexOf('qubu.io') > -1 ? 'https://api.qubu.io' : '/api';
+		fetch(`${base}/stats`, { method: 'GET' })
 			.then(response => response.json())
 			.then(stats => {
 				//this.setState({ stats });
