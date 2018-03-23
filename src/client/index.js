@@ -2,14 +2,8 @@ import React from 'react';
 import {render} from 'react-dom';
 
 async function main () {
-	const buttons = await fetch('/api/buttons')
-		.then(response => response.json())
-		.then(buttons => {
-			return buttons.reduce((buttons, button) => {
-				buttons[button.buttonId] = button;
-				return buttons;
-			}, {});
-		});
+	const quizzes = await fetch('/api/quizzes')
+		.then(response => response.json());
 
 	const socket = io();
 
@@ -22,47 +16,19 @@ async function main () {
 		componentDidMount () {
 			const {socket} = this.props;
 
-			socket.on('button-pressed', buttonPress => {
-				const {buttonsPressed} = this.state;
-				const {buttonId, timestamp} = buttonPress;
-
-				const buttonPressed = buttonsPressed[buttonId];
-
-				if (buttonPressed !== undefined) {
-					return;
-				}
-
-				const pressCount = Object.keys(buttonsPressed).length + 1;
-
-				this.setState({buttonsPressed: Object.assign({}, buttonsPressed, {[buttonId]: pressCount})});
-			});
-
-			socket.on('round-created', roundCreated => {
-				console.log('round-created');
-				this.setState({buttonsPressed: {}});
+			socket.on('quiz.created', buttonPress => {
+				console.log('quiz.created');
 			});
 		}
 
 		render () {
-			const {buttons} = this.props;
-			const {buttonsPressed} = this.state;
-
-			return <div>
-				<button className="new-round-button" onClick={() => fetch('/api/rounds', {method: 'POST'})}>New Round</button>
-				<ul className="buttons">
-					{Object.entries(buttonsPressed).map(entry => 
-						<li className="button animated bounceIn" key={entry[0]}>
-							<span className="button__name">{buttons[entry[0]].name}</span>
-						</li>
-					)}
-				</ul>
-			</div>;
+			return null;
 		}
 	}
 
 	const mainElement = document.querySelector('.main');
-	
-	render(React.createElement(App, {socket, buttons}), mainElement);
+
+	render(React.createElement(App, {socket, quizzes}), mainElement);
 }
 
 main();

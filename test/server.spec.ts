@@ -34,8 +34,8 @@ const tests = [
 			body: {
 				quizId: UUID
 			},
-			status: 201,
-			statusText: 'Created'
+			status: 200,
+			statusText: 'OK'
 		}
 	},
 	{
@@ -89,8 +89,8 @@ const tests = [
 				quizId: UUID,
 				teamId: UUID
 			},
-			status: 201,
-			statusText: 'Created'
+			status: 200,
+			statusText: 'OK'
 		}
 	},
 	{
@@ -108,8 +108,8 @@ const tests = [
 				quizId: UUID,
 				playerId: UUID
 			},
-			status: 201,
-			statusText: 'Created'
+			status: 200,
+			statusText: 'OK'
 		}
 	},
 	{
@@ -148,8 +148,8 @@ const tests = [
 				quizId: UUID,
 				playerId: UUID
 			},
-			status: 201,
-			statusText: 'Created'
+			status: 200,
+			statusText: 'OK'
 		}
 	},
 	{
@@ -165,8 +165,8 @@ const tests = [
 				quizId: UUID,
 				roundId: UUID
 			},
-			status: 201,
-			statusText: 'Created'
+			status: 200,
+			statusText: 'OK'
 		}
 	},
 	{
@@ -201,8 +201,8 @@ const tests = [
 				roundId: ({createQuizRound}) => createQuizRound.actualResponse.body.roundId,
 				buzzId: UUID
 			},
-			status: 201,
-			statusText: 'Created'
+			status: 200,
+			statusText: 'OK'
 		}
 	},
 	{
@@ -222,8 +222,8 @@ const tests = [
 				roundId: ({createQuizRound}) => createQuizRound.actualResponse.body.roundId,
 				buzzId: UUID
 			},
-			status: 201,
-			statusText: 'Created'
+			status: 200,
+			statusText: 'OK'
 		}
 	},
 	{

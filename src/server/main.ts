@@ -1,7 +1,7 @@
 import { createRequestListener, HttpStatusCodes, all, AsyncReducerFunction, lazy, HttpContext } from '@jambon/core';
 import { jsonParseRequestBody, jsonStringifyResponseBody, setResponseContentTypeHeaderToApplicationJson } from '@jambon/json';
 import { get, post, put, del, host, path } from '@jambon/router';
-
+import { connect } from 'amqplib';
 import { MongoClient } from 'mongodb';
 import { createServer } from 'http';
 import * as socketIO from 'socket.io';
@@ -9,14 +9,85 @@ import * as uuid from 'uuid';
 import * as shortid from 'shortid';
 import { dir } from './static';
 import { pug } from './pug';
+import  * as createDebug from 'debug';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
 export async function main () {
 	try {
+		const debug = createDebug('qubu');
 		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
 		const db = await MongoClient.connect(mongodbConnectionString);
 		const quizzes = db.collection('quizzes');
+		const events = db.collection('events');
+
+		const amqpUrl = process.env.CLOUDAMQP_URL || "amqp://localhost";
+		const connection = await connect(amqpUrl);
+		const channel = await connection.createChannel();
+
+		interface Event {
+			id : string
+			type : string,
+			data : object
+		}
+
+		function createEventId () {
+			debug('createEventId');
+			return uuid.v4();
+		}
+
+		function createEvent (type : string, data : object) {
+			debug('createEvent');
+			return {
+				id: createEventId(),
+				type,
+				data
+			};
+		}
+
+		async function storeEvent (event : Event) {
+			debug('storeEvent');
+			await writeEvent(event);
+			await publishEvent(event);
+			await emitEvent(event);
+		}
+
+		async function writeEvent (event : Event) {
+			debug('writeEvent');
+			await events.insertOne({...event});
+		}
+
+		async function publishEvent (event : Event) {
+			debug('publishEvent');
+			const { id, type, data } = event;
+
+			const queue = `qubu.events.${event.type}`;
+			const message = new Buffer(JSON.stringify(event));
+
+			await channel.assertQueue(queue, {durable: true});
+			await channel.sendToQueue(queue, message);
+		}
+
+		async function emitEvent (event : Event) {
+			debug('emitEvent');
+			io.emit(event.type, event, { for: 'everyone' });
+		}
+
+		async function subscribe (type, handler) {
+			debug('subscribe: %s', type);
+			const queue = `qubu.events.${type}`;
+
+			await channel.assertQueue(queue, {durable: true});
+			await channel.consume(queue, async message => {
+				debug('subscribe.consume');
+				if (message !== null) {
+					const json = message.content.toString();
+					const event = JSON.parse(json);
+					await handler(event);
+					channel.ack(message);
+				}
+		  });
+		}
 
 		async function getQuizzes (context) {
 			return {
@@ -41,7 +112,7 @@ export async function main () {
 
 			await quizzes.insert({ quizId, code, name, created });
 
-			io.emit('quiz.created', { quizId }, { for: 'everyone' });
+			await storeEvent(createEvent('quiz.created', { quizId }));
 
 			return {
 				...context,
@@ -97,7 +168,7 @@ export async function main () {
 				}
 			}).then(throwIfNotUpdated);
 
-			io.emit('quiz.player.created', { quizId, playerId }, { for: 'everyone' });
+			await storeEvent(createEvent('quiz.player.created', { quizId, playerId }));
 
 			return {
 				...context,
@@ -145,7 +216,7 @@ export async function main () {
 				} }
 			).then(throwIfNotUpdated);
 
-			io.emit('quiz.player.updated', { quizId, playerId }, { for: 'everyone' });
+			await storeEvent(createEvent('quiz.player.updated', { quizId, playerId }));
 
 			return {
 				...context,
@@ -171,7 +242,7 @@ export async function main () {
 				},
 			).then(throwIfNotUpdated);
 
-			io.emit('quiz.player.deleted', { quizId, playerId }, { for: 'everyone' });
+			await storeEvent(createEvent('quiz.player.deleted', { quizId, playerId }));
 
 			return {
 				...context,
@@ -201,7 +272,7 @@ export async function main () {
 				$set: { currentRoundId: roundId }
 			}).then(throwIfNotUpdated);
 
-			io.emit('quiz.round.created', { quizId, roundId }, { for: 'everyone' });
+			await storeEvent(createEvent('quiz.round.created', { quizId, roundId }));
 
 			return {
 				...context,
@@ -262,7 +333,7 @@ export async function main () {
 
 			await quizzes.updateOne(query, update).then(throwIfNotUpdated);
 
-			io.emit('quiz.round.buzzes.created', { quizId, roundId, buzzId }, { for: 'everyone' });
+			await storeEvent(createEvent('quiz.round.buzz.created', { quizId, roundId, buzzId }));
 
 			return {
 				...context,
@@ -292,7 +363,7 @@ export async function main () {
 
 			await quizzes.removeOne({ quizId });
 
-			io.emit('quiz.deleted', { quizId }, { for: 'everyone' });
+			await storeEvent(createEvent('quiz.deleted', { quizId }));
 
 			return {
 				...context,
@@ -321,7 +392,7 @@ export async function main () {
 				$push: { teams: team }
 			}).then(throwIfNotUpdated);
 
-			io.emit('quiz.team.created', { quizId, teamId }, { for: 'everyone' });
+			await storeEvent(createEvent('quiz.team.created', { quizId, teamId }));
 
 			return {
 				...context,
@@ -405,10 +476,24 @@ export async function main () {
 
 		const port = process.env.PORT || 1432;
 
-		server.listen(port, () => {
+		server.listen(port, async () => {
 			console.info(`Listening on port ${port}`);
+
+			await subscribe('quiz.created', handleEvent);
+			await subscribe('quiz.deleted', handleEvent);
+			await subscribe('quiz.team.created', handleEvent);
+			await subscribe('quiz.player.created', handleEvent);
+			await subscribe('quiz.player.updated', handleEvent);
+			await subscribe('quiz.player.deleted', handleEvent);
+			await subscribe('quiz.round.created', handleEvent);
+			await subscribe('quiz.round.buzz.created', handleEvent);
+
+			function handleEvent (event : Event) {
+				debug('event: %O', event);
+			}
 		});
 	}
+
 	catch (err) {
 		console.error(err, err.stack);
 
