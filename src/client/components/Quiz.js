@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export default class Quiz extends Component {
 	constructor(props) {
 		super(props);
-		this.state = {buzzers: []};
+		this.state = { buzzers: [] };
 		this.newRound = this.newRound.bind(this);
 	}
 
@@ -13,23 +13,27 @@ export default class Quiz extends Component {
 		fetch(`${baseApiUrl}/quizzes/${quizCode}`, { method: 'GET' })
 			.then((response) => response.json())
 			.then(quiz => {
+				console.log('Quiz: ', quiz);
 				return this.setState({ quiz });
 			});
+
 		const socket = io();
 		socket.on('quiz.round.buzz.created', buzzed => {
-			const { quiz } = this.state;
+			console.log('State of quiz: ', );
+			const { quiz, buzzers } = this.state;
 			const { playerId, teamId } = buzzed.data;
-			const team = this.state.quiz.teams.find(team => team.teamId === teamId);
+			const team = quiz.teams.find(team => team.teamId === teamId);
 			const { name: teamName } = team;
-			const player = this.state.quiz.players.find(player => player.playerId = playerId);
+			const player = quiz.players.find(player => player.playerId = playerId);
 			const { name: playerName } = player;
-			const { buzzers } = this.state;
 			this.setState({ buzzers: [...buzzers, { playerName, teamName }] });
 		});
 	}
 
 	async newRound() {
 		const quizCode = this.props.match.params.quizCode;
+		const { buzzers, quiz } = this.state;
+		console.log('Buzzers: ', buzzers);
 		await fetch(`${baseApiUrl}/quizzes/${quizCode}/rounds`, {
 			method: 'POST',
 			body: JSON.stringify({})
@@ -38,7 +42,8 @@ export default class Quiz extends Component {
 			.then(response => response.json())
 			.then(quiz => {
 				this.setState({
-					quiz
+					quiz: quiz,
+					buzzers: []
 				});
 			}).catch((err) => console.error(err));
 	}
