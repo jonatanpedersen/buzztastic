@@ -62,7 +62,6 @@ export default class Quiz extends Component {
 						<ul className="buzzer-list ">
 							{buzzers.map(buzzer =>
 								<li className="buzzer-list__item animated bounceIn">
-									<span className="buzzer__name">{buzzer.playerName}</span>
 									<span className="buzzer__team">{buzzer.teamName}</span>
 								</li>
 							)}
