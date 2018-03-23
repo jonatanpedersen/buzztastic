@@ -71,7 +71,7 @@ export default class Quiz extends Component {
 						</ul>
 					</div>
 					<button className="button new-round-button" onClick={this.newRound}>Next round</button>
-					<Link className="button button--danger end-quiz-button" to="/app" >End quiz</Link>
+					<Link className="button button--danger end-quiz-button" to={baseUrl} >End quiz</Link>
 				</div>
 			</section>
 		)
