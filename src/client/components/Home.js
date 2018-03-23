@@ -42,7 +42,7 @@ export default class Home extends Component {
 
 			const quizName = quizInfo.name;
 			const quizCode = quizInfo.code;
-			this.props.history.push(`/app/start-quiz/${quizCode}/${quizName}`);
+			this.props.history.push(`${baseUrl}start-quiz/${quizCode}/${quizName}`);
 		}
 	}
 	render() {

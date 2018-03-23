@@ -15,7 +15,7 @@ export default class StartQuiz extends Component {
 			body: JSON.stringify({})
 		})
 			.then((response) => response.json())
-			.then(rounds => this.props.history.push(`/app/quiz/${quizCode}`))
+			.then(rounds => this.props.history.push(`${baseUrl}quiz/${quizCode}`))
 			.catch(err => console.error(err));
 	}
 	render() {
