@@ -26,12 +26,7 @@ export default class Home extends Component {
 
 			const quizId = await fetch(`${baseApiUrl}/quizzes`, {
 				body: JSON.stringify(quiz),
-				method: 'POST',
-				headers: {
-					'content-type': 'application/json',
-					'Accept': 'application/json',
-					'Access-Control-Allow-Origin': '*'
-				}
+				method: 'POST'
 			})
 				.then(postResponse => postResponse.json())
 				.then((json) => json.quizId)
