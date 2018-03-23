@@ -6,6 +6,7 @@ import StartQuiz from './StartQuiz'
 
 const baseUrl = document.querySelector('head base').attributes.href.value;
 console.log('Base url: ', baseUrl);
+console.log('rendeeeer');
 
 export default class Main extends Component {
 	render() {
