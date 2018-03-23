@@ -22,7 +22,7 @@ export default class Home extends Component {
 		if (name !== undefined) {
 			const quiz = { "name": name }
 
-			const quizId = await fetch('/api/quizzes', {
+			const quizId = await fetch(`${baseApiUrl}/quizzes`, {
 				body: JSON.stringify(quiz),
 				method: "POST",
 				headers: new Headers({ 'Content-Type': 'application/json' })
@@ -30,7 +30,7 @@ export default class Home extends Component {
 				.then(postResponse => postResponse.json())
 				.then((json) => json.quizId)
 				.catch(err => console.error(err));
-			const quizInfo = await fetch(`/api/quizzes/${quizId}`, { method: 'GET' })
+			const quizInfo = await fetch(`${baseApiUrl}/quizzes/${quizId}`, { method: 'GET' })
 				.then(getResponse => getResponse.json())
 				.catch(err => console.error(err));
 

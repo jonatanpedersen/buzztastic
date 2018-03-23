@@ -10,7 +10,7 @@ export default class StartQuiz extends Component {
 	startQuiz(event) {
 		const quizCode = document.getElementById('quizCode').value;
 
-		fetch(`/api/quizzes/${quizCode}/rounds`, {
+		fetch(`${baseApiUrl}/quizzes/${quizCode}/rounds`, {
 			method: 'POST',
 			body: JSON.stringify({}),
 			headers: {

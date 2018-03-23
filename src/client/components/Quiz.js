@@ -10,7 +10,7 @@ export default class Quiz extends Component {
 
 	componentDidMount() {
 		const quizCode = this.props.match.params.quizCode;
-		fetch(`/api/quizzes/${quizCode}`, { method: 'GET' })
+		fetch(`${baseApiUrl}/quizzes/${quizCode}`, { method: 'GET' })
 			.then((response) => response.json())
 			.then(quiz => {
 				return this.setState({ quiz });
@@ -30,7 +30,7 @@ export default class Quiz extends Component {
 
 	async newRound() {
 		const quizCode = this.props.match.params.quizCode;
-		await fetch(`/api/quizzes/${quizCode}/rounds`, {
+		await fetch(`${baseApiUrl}/quizzes/${quizCode}/rounds`, {
 			method: 'POST',
 			body: JSON.stringify({}),
 			headers: {
@@ -38,7 +38,7 @@ export default class Quiz extends Component {
 				'Accept': 'application/json'
 			}
 		});
-		fetch(`/api/quizzes/${quizCode}`, { method: 'GET' })
+		fetch(`${baseApiUrl}/quizzes/${quizCode}`, { method: 'GET' })
 			.then(response => response.json())
 			.then(quiz => {
 				this.setState({

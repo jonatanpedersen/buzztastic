@@ -17,6 +17,10 @@ html
 		.top-nav
 			img.top-nav-brand(src='images/splash_3.png')
 		#root
+		script.
+			const baseUrl = document.querySelector('head base').attributes.href.value;
+			const baseApiUrl = baseUrl === '/app/' ? '/api' : 'https://api.qubu.io';
 		script(src='/socket.io/socket.io.js')
 		script(type="text/javascript" src="index.js")
+			//- const apiUrl = `${router && router.path || ''}/`;
 		script(src="/socket.io/socket.io.js")
