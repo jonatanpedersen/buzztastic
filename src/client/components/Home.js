@@ -30,9 +30,11 @@ export default class Home extends Component {
 				.then(postResponse => postResponse.json())
 				.then((json) => json.quizId)
 				.catch(err => console.error(err));
+				console.log('Quiz id: ', quizId);
 			const quizInfo = await fetch(`${baseApiUrl}/quizzes/${quizId}`, { method: 'GET' })
 				.then(getResponse => getResponse.json())
 				.catch(err => console.error(err));
+				console.log('Quiz info: ', quizInfo);
 
 			const quizName = quizInfo.name;
 			const quizCode = quizInfo.code;
