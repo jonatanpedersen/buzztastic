@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Switch, Route, BrowserHistory } from 'react-router-dom'
+import { Switch, Route, Redirect } from 'react-router-dom'
 import Home from './Home';
 import Quiz from './Quiz';
 import StartQuiz from './StartQuiz'
@@ -17,7 +17,8 @@ export default class Main extends Component {
 					<Route exact path={baseUrl} component={Home} />
 					<Route path={baseUrl + 'start-quiz/:quizCode/:quizName'} component={StartQuiz} />
 					<Route path={baseUrl + 'quiz/:quizCode'} component={Quiz} />
-					<Route path={baseUrl + '*'} component={NotFound}/>
+					<Route path={baseUrl + '404'} component={NotFound}/>
+					<Redirect from='*' to='/404'/>
 				</Switch>
 			</main>
 		)

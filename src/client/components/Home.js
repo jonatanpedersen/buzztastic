@@ -12,7 +12,7 @@ export default class Home extends Component {
 		event.preventDefault();
 		const quizInputName = this.state.quizInputName;
 
-		console.log('Name: ', quizInputName);
+		console.log('input name: ', quizInputName);
 
 		if (quizInputName.trim() === '') {
 			console.error('quiz name not found');
@@ -27,7 +27,10 @@ export default class Home extends Component {
 			const quizId = await fetch(`${baseApiUrl}/quizzes`, {
 				body: JSON.stringify(quiz),
 				method: "POST",
-				headers: new Headers({ 'Content-Type': 'application/json' })
+				headers: {
+					'content-type': 'application/json',
+					'Accept': 'application/json'
+				}
 			})
 				.then(postResponse => postResponse.json())
 				.then((json) => json.quizId)
