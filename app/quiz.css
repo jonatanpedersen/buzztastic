@@ -4,3 +4,25 @@ p.quiz-info {
 
 .new-round-button {position: absolute; bottom: 2rem; right: 2rem; background-color: rgba(0,0,0,.1); border-width: 0; padding: 1rem 2rem; border-radius: 2px; color: #fff; font-size: 1rem;}
 .end-quiz-button {position: absolute; bottom: 2rem; left: 2rem; padding: 1rem 2rem;}
+
+.round-count {
+	font-size: 1.4rem;
+}
+
+.buzzer-list {
+	list-style-type: none; padding: 2rem 0; margin: 0
+}
+
+.buzzer-list__item {
+	margin: 2rem 0; padding: 1rem; background-color: #95A5A6; text-align: center; border-radius: 6px;
+}
+.buzzer-list__item:nth-child(1) { font-size: 3.5rem; background-color: #D80505;}
+.buzzer-list__item:nth-child(2) { font-size: 2.8rem; margin: 2rem 4rem; }
+.buzzer-list__item:nth-child(3) { font-size: 2rem; margin: 2rem 8rem; }
+.buzzer-list__item:nth-child(n+4) { font-size: 1.2rem; margin: 2rem 16rem; }
+
+.buzzer__name {
+	font-family: arial;
+	display: block;
+	color: #fff;
+}

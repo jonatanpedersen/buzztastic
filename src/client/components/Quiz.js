@@ -56,16 +56,20 @@ export default class Quiz extends Component {
 		return (
 			<section className="section--quiz">
 				<div>
-					<h1>Quiz code: {quizCode}</h1>
-					<label id="rounds" >Round: {numberOfRounds}</label>
-					<ul className="buzzer-list animated bounceIn">
-						{buzzers.map(buzzer =>
-							<li className="buzzer-list__item">
-								<span className="buzzer__name">{buzzer.playerName}</span>
-								<span className="buzzer__name">{buzzer.teamName}</span>
-							</li>
-						)}
-					</ul>
+					<div className="quiz-info">
+						<h1>Quiz code: {quizCode}</h1>
+						<label id="rounds" className="round-count" >Round: {numberOfRounds}</label>
+					</div>
+					<div className="buzzers">
+						<ul className="buzzer-list ">
+							{buzzers.map(buzzer =>
+								<li className="buzzer-list__item animated bounceIn">
+									<span className="buzzer__name">{buzzer.playerName}</span>
+									<span className="buzzer__name">{buzzer.teamName}</span>
+								</li>
+							)}
+						</ul>
+					</div>
 					<button className="button new-round-button" onClick={this.newRound}>Next round</button>
 					<Link className="button button--danger end-quiz-button" to="/app" >End quiz</Link>
 				</div>
