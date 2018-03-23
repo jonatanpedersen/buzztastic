@@ -20,6 +20,7 @@ export default class Quiz extends Component {
 		socket.on('quiz.round.buzz.created', buzzed => {
 			const { quiz, buzzers } = this.state;
 			const { playerId, teamId } = buzzed.data;
+			console.log('Quiz: ', quiz);
 			const team = quiz.teams.find(team => team.teamId === teamId);
 			const { name: teamName } = team;
 			const player = quiz.players.find(player => player.playerId = playerId);
