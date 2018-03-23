@@ -5,9 +5,16 @@ html
 		base(href=`${router && router.path || ''}/`)
 		title QuBu - The buzztastic quiz buzzer.
 		style.
-			html, .body, .main { height: 100%}
+			html, .body, .main { height: 100%; margin: 0}
 			.main { display: flex; justify-content: center; align-items: center; }
 			.rotate { animation: rotation 2s infinite linear; }
+			.event { position: absolute; }
+			.event__image { position: relative }
+
+			.event__image--small { width: 50px; height: 50px; animation: small 5s forwards; }
+			.event__image--medium { width: 100px; height: 100px; animation: medium 5s forwards; }
+			.event__image--large { width: 150px; height: 150px; animation: large 5s forwards; }
+
 			@keyframes rotation {
 				from {
 					transform: rotate(0deg);
@@ -16,13 +23,28 @@ html
 					transform: rotate(359deg);
 				}
 			}
+
+			@keyframes small {
+				0%   { opacity: 0; left: 0 }
+				5%   { opacity: 1; }
+				50%  { opacity: 1; }
+				100% { opacity: 0; left: -50px }
+			}
+
+			@keyframes medium {
+				0%   { opacity: 0; left: 0 }
+				5%   { opacity: 1; }
+				50%  { opacity: 1; }
+				100% { opacity: 0; left: -100px }
+			}
+
+			@keyframes large {
+				0%   { opacity: 0; left: 0 }
+				5%   { opacity: 1; }
+				50%  { opacity: 1; }
+				100% { opacity: 0; left: -150px }
+			}
 	body.body
 		main.main
-			h1
-				img.rotate(src="splash_3.png" alt="QuBu - The buzztastic quiz buzzer." title="QuBu")
 		script(src="/socket.io/socket.io.js")
-		script.
-			const socket = io();
-			socket.on('quiz.created', buttonPress => {
-				console.log('quiz.created');
-			});
+		script(src="index.js")

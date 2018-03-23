@@ -511,7 +511,7 @@ export async function main () {
 				{ upsert:true }
 			);
 
-			await storeEvent(createEvent('stats.updated', { }));
+			await storeEvent(createEvent('stats.updated', { metric: event.type }));
 		}
 	}
 

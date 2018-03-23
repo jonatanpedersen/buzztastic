@@ -357,7 +357,7 @@ async function main() {
         async function handleEvent(event) {
             debug('event: %O', event);
             await stats.updateOne({ metric: event.type }, { $inc: { count: 1 } }, { upsert: true });
-            await storeEvent(createEvent('stats.updated', {}));
+            await storeEvent(createEvent('stats.updated', { metric: event.type }));
         }
     }
     catch (err) {
