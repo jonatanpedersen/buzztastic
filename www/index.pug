@@ -20,3 +20,9 @@ html
 		main.main
 			h1
 				img.rotate(src="splash_3.png" alt="QuBu - The buzztastic quiz buzzer." title="QuBu")
+		script(src="/socket.io/socket.io.js")
+		script.
+			const socket = io();
+			socket.on('quiz.created', buttonPress => {
+				console.log('quiz.created');
+			});

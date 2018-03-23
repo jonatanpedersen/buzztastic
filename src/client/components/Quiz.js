@@ -13,6 +13,7 @@ export default class Quiz extends Component {
 	}
 
 	componentDidMount() {
+		console.log(this.props);
 		const quizId = this.props.match.params.quizId;
 		const quizCode = this.props.match.params.quizCode;
 		fetch(`/api/quizzes/${quizId}`, { method: 'GET' })
@@ -55,6 +56,8 @@ export default class Quiz extends Component {
 	render() {
 		const numberOfRounds = this.state.rounds ? this.state.rounds.length : 1;
 		const quizCode = this.state.quizCode;
+		const quizId = '';
+
 		return (
 			<section className="section--quiz">
 				<div>

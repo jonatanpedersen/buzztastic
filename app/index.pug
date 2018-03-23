@@ -3,18 +3,25 @@ html
 	head
 		meta(charset='utf-8')
 		title React App Setup
-		link(href='/animate.css', rel='stylesheet', type='text/css')
-		link(href='/home.css', rel='stylesheet', type='text/css')
-		link(href='/main.css', rel='stylesheet', type='text/css')
-		link(href='/quiz.css', rel='stylesheet', type='text/css')
-		link(href='/nav.css', rel='stylesheet', type='text/css')
-		link(href='/buzzer.css', rel='stylesheet', type='text/css')
+		base(href=`${router && router.path || ''}/`)
+		link(href='animate.css', rel='stylesheet', type='text/css')
+		link(href='home.css', rel='stylesheet', type='text/css')
+		link(href='main.css', rel='stylesheet', type='text/css')
+		link(href='quiz.css', rel='stylesheet', type='text/css')
+		link(href='nav.css', rel='stylesheet', type='text/css')
+		link(href='buzzer.css', rel='stylesheet', type='text/css')
 		style.
 			html, body {padding: 0; margin: 0; height: 100%}
 			body {background-color: #34495E}
 	body
 		.top-nav
-			img.top-nav-brand(src='/images/splash_3.png')
+			img.top-nav-brand(src='images/splash_3.png')
 		#root
 		script(src='/socket.io/socket.io.js')
 		script(type="text/javascript" src="index.js")
+		script(src="/socket.io/socket.io.js")
+		script.
+			const socket = io();
+			socket.on('quiz.created', buttonPress => {
+				console.log('quiz.created');
+			});
