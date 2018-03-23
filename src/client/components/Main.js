@@ -17,8 +17,7 @@ export default class Main extends Component {
 					<Route exact path={baseUrl} component={Home} />
 					<Route path={baseUrl + 'start-quiz/:quizCode/:quizName'} component={StartQuiz} />
 					<Route path={baseUrl + 'quiz/:quizCode'} component={Quiz} />
-					<Route path={baseUrl + '404'} component={NotFound}/>
-					<Redirect from='*' to='/404'/>
+					<Route path={baseUrl + '*'} component={NotFound}/>
 				</Switch>
 			</main>
 		)
