@@ -44,6 +44,7 @@ export default class Home extends Component {
 		}
 	}
 	render() {
+		console.log('Rendering Home!!!');
 		return (
 			<section class="section--home">
 				<div class="home">
