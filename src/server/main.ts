@@ -20,6 +20,7 @@ export async function main () {
 		const db = await MongoClient.connect(mongodbConnectionString);
 		const quizzes = db.collection('quizzes');
 		const events = db.collection('events');
+		const stats = db.collection('stats');
 
 		const amqpUrl = process.env.CLOUDAMQP_URL || "amqp://localhost";
 		const connection = await connect(amqpUrl);
@@ -41,7 +42,8 @@ export async function main () {
 			return {
 				id: createEventId(),
 				type,
-				data
+				data,
+				created: new Date()
 			};
 		}
 
@@ -87,6 +89,16 @@ export async function main () {
 					channel.ack(message);
 				}
 		  });
+		}
+
+		async function getStats (context) {
+			return {
+				...context,
+				response: {
+					...context.response,
+					body: await stats.find({}).toArray()
+				}
+			}
 		}
 
 		async function getQuizzes (context) {
@@ -333,7 +345,7 @@ export async function main () {
 
 			await quizzes.updateOne(query, update).then(throwIfNotUpdated);
 
-			await storeEvent(createEvent('quiz.round.buzz.created', { quizId, roundId, buzzId }));
+			await storeEvent(createEvent('quiz.round.buzz.created', { quizId, roundId, playerId, teamId, buzzId }));
 
 			return {
 				...context,
@@ -408,6 +420,7 @@ export async function main () {
 			post(jsonParseRequestBody),
 			put(jsonParseRequestBody),
 			trycatch(
+				path('stats$', getStats),
 				path('quizzes$',
 					get(getQuizzes),
 					post(createQuiz),
@@ -478,20 +491,28 @@ export async function main () {
 
 		server.listen(port, async () => {
 			console.info(`Listening on port ${port}`);
-
-			await subscribe('quiz.created', handleEvent);
-			await subscribe('quiz.deleted', handleEvent);
-			await subscribe('quiz.team.created', handleEvent);
-			await subscribe('quiz.player.created', handleEvent);
-			await subscribe('quiz.player.updated', handleEvent);
-			await subscribe('quiz.player.deleted', handleEvent);
-			await subscribe('quiz.round.created', handleEvent);
-			await subscribe('quiz.round.buzz.created', handleEvent);
-
-			function handleEvent (event : Event) {
-				debug('event: %O', event);
-			}
 		});
+
+		await subscribe('quiz.created', handleEvent);
+		await subscribe('quiz.deleted', handleEvent);
+		await subscribe('quiz.team.created', handleEvent);
+		await subscribe('quiz.player.created', handleEvent);
+		await subscribe('quiz.player.updated', handleEvent);
+		await subscribe('quiz.player.deleted', handleEvent);
+		await subscribe('quiz.round.created', handleEvent);
+		await subscribe('quiz.round.buzz.created', handleEvent);
+
+		async function handleEvent (event : Event) {
+			debug('event: %O', event);
+
+			await stats.updateOne(
+				{ metric: event.type },
+				{ $inc: { count: 1 } },
+				{ upsert:true }
+			);
+
+			await storeEvent(createEvent('stats.updated', { }));
+		}
 	}
 
 	catch (err) {

@@ -19,6 +19,7 @@ async function main() {
         const db = await mongodb_1.MongoClient.connect(mongodbConnectionString);
         const quizzes = db.collection('quizzes');
         const events = db.collection('events');
+        const stats = db.collection('stats');
         const amqpUrl = process.env.CLOUDAMQP_URL || "amqp://localhost";
         const connection = await amqplib_1.connect(amqpUrl);
         const channel = await connection.createChannel();
@@ -31,7 +32,8 @@ async function main() {
             return {
                 id: createEventId(),
                 type,
-                data
+                data,
+                created: new Date()
             };
         }
         async function storeEvent(event) {
@@ -69,6 +71,15 @@ async function main() {
                     channel.ack(message);
                 }
             });
+        }
+        async function getStats(context) {
+            return {
+                ...context,
+                response: {
+                    ...context.response,
+                    body: await stats.find({}).toArray()
+                }
+            };
         }
         async function getQuizzes(context) {
             return {
@@ -263,7 +274,7 @@ async function main() {
                 }
             };
             await quizzes.updateOne(query, update).then(throwIfNotUpdated);
-            await storeEvent(createEvent('quiz.round.buzz.created', { quizId, roundId, buzzId }));
+            await storeEvent(createEvent('quiz.round.buzz.created', { quizId, roundId, playerId, teamId, buzzId }));
             return {
                 ...context,
                 response: {
@@ -320,7 +331,7 @@ async function main() {
                 }
             };
         }
-        const api = core_1.all(router_1.post(json_1.jsonParseRequestBody), router_1.put(json_1.jsonParseRequestBody), trycatch(router_1.path('quizzes$', router_1.get(getQuizzes), router_1.post(createQuiz)), router_1.path('quizzes', router_1.path(':quizIdOrCode', quizIdOrCode, router_1.path('players$', router_1.post(createQuizPlayer)), router_1.path('players/:playerId', playerId, router_1.put(updateQuizPlayer), router_1.del(deleteQuizPlayer)), router_1.path('teams$', router_1.post(createQuizTeam)), router_1.path('rounds$', router_1.post(createQuizRound)), router_1.path('rounds/current/buzzes', router_1.post(createQuizRoundBuzz))), router_1.path(':quizIdOrCode$', router_1.get(getQuiz), router_1.del(deleteQuiz))), log, def(setStatusCode(400))), json_1.setResponseContentTypeHeaderToApplicationJson, json_1.jsonStringifyResponseBody);
+        const api = core_1.all(router_1.post(json_1.jsonParseRequestBody), router_1.put(json_1.jsonParseRequestBody), trycatch(router_1.path('stats$', getStats), router_1.path('quizzes$', router_1.get(getQuizzes), router_1.post(createQuiz)), router_1.path('quizzes', router_1.path(':quizIdOrCode', quizIdOrCode, router_1.path('players$', router_1.post(createQuizPlayer)), router_1.path('players/:playerId', playerId, router_1.put(updateQuizPlayer), router_1.del(deleteQuizPlayer)), router_1.path('teams$', router_1.post(createQuizTeam)), router_1.path('rounds$', router_1.post(createQuizRound)), router_1.path('rounds/current/buzzes', router_1.post(createQuizRoundBuzz))), router_1.path(':quizIdOrCode$', router_1.get(getQuiz), router_1.del(deleteQuiz))), log, def(setStatusCode(400))), json_1.setResponseContentTypeHeaderToApplicationJson, json_1.jsonStringifyResponseBody);
         const app = [
             static_1.dir('app'),
             def(pug_1.pug('./app/index.pug'))
@@ -334,18 +345,20 @@ async function main() {
         const port = process.env.PORT || 1432;
         server.listen(port, async () => {
             console.info(`Listening on port ${port}`);
-            await subscribe('quiz.created', handleEvent);
-            await subscribe('quiz.deleted', handleEvent);
-            await subscribe('quiz.team.created', handleEvent);
-            await subscribe('quiz.player.created', handleEvent);
-            await subscribe('quiz.player.updated', handleEvent);
-            await subscribe('quiz.player.deleted', handleEvent);
-            await subscribe('quiz.round.created', handleEvent);
-            await subscribe('quiz.round.buzz.created', handleEvent);
-            function handleEvent(event) {
-                debug('event: %O', event);
-            }
         });
+        await subscribe('quiz.created', handleEvent);
+        await subscribe('quiz.deleted', handleEvent);
+        await subscribe('quiz.team.created', handleEvent);
+        await subscribe('quiz.player.created', handleEvent);
+        await subscribe('quiz.player.updated', handleEvent);
+        await subscribe('quiz.player.deleted', handleEvent);
+        await subscribe('quiz.round.created', handleEvent);
+        await subscribe('quiz.round.buzz.created', handleEvent);
+        async function handleEvent(event) {
+            debug('event: %O', event);
+            await stats.updateOne({ metric: event.type }, { $inc: { count: 1 } }, { upsert: true });
+            await storeEvent(createEvent('stats.updated', {}));
+        }
     }
     catch (err) {
         console.error(err, err.stack);
