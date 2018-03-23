@@ -32,11 +32,7 @@ export default class Quiz extends Component {
 		const quizCode = this.props.match.params.quizCode;
 		await fetch(`${baseApiUrl}/quizzes/${quizCode}/rounds`, {
 			method: 'POST',
-			body: JSON.stringify({}),
-			headers: {
-				'content-type': 'application/json',
-				'Accept': 'application/json'
-			}
+			body: JSON.stringify({})
 		});
 		fetch(`${baseApiUrl}/quizzes/${quizCode}`, { method: 'GET' })
 			.then(response => response.json())

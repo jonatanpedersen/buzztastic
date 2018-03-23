@@ -12,11 +12,7 @@ export default class StartQuiz extends Component {
 
 		fetch(`${baseApiUrl}/quizzes/${quizCode}/rounds`, {
 			method: 'POST',
-			body: JSON.stringify({}),
-			headers: {
-				'content-type': 'application/json',
-				'Accept': 'application/json'
-			}
+			body: JSON.stringify({})
 		})
 			.then((response) => response.json())
 			.then(rounds => this.props.history.push(`/app/quiz/${quizCode}`))
