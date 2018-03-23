@@ -1,17 +1,19 @@
 import React, { Component } from 'react'
-import { Switch, Route } from 'react-router-dom'
+import { Switch, Route, BrowserHistory } from 'react-router-dom'
 import Home from './Home';
 import Quiz from './Quiz';
 import StartQuiz from './StartQuiz'
+
+const baseUrl = document.querySelector('head base').attributes.href.value;
 
 export default class Main extends Component {
 	render() {
 		return (
 			<main className='main'>
 				<Switch>
-					<Route exact path='/app/' component={Home} />
-					<Route path='/app/start-quiz/:quizCode/:quizName' component={StartQuiz} />
-					<Route path='/app/quiz/:quizCode' component={Quiz} />
+					<Route exact path={baseUrl} component={Home} />
+					<Route path={baseUrl + 'start-quiz/:quizCode/:quizName'} component={StartQuiz} />
+					<Route path={baseUrl + 'quiz/:quizCode'} component={Quiz} />
 				</Switch>
 			</main>
 		)
