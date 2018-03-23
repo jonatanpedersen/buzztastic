@@ -5,6 +5,7 @@ import Quiz from './Quiz';
 import StartQuiz from './StartQuiz'
 
 const baseUrl = document.querySelector('head base').attributes.href.value;
+console.log('Base url: ', baseUrl);
 
 export default class Main extends Component {
 	render() {
