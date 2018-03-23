@@ -13,13 +13,11 @@ export default class Quiz extends Component {
 		fetch(`${baseApiUrl}/quizzes/${quizCode}`, { method: 'GET' })
 			.then((response) => response.json())
 			.then(quiz => {
-				console.log('Quiz: ', quiz);
 				return this.setState({ quiz });
 			});
 
 		const socket = io();
 		socket.on('quiz.round.buzz.created', buzzed => {
-			console.log('State of quiz: ', );
 			const { quiz, buzzers } = this.state;
 			const { playerId, teamId } = buzzed.data;
 			const team = quiz.teams.find(team => team.teamId === teamId);
@@ -33,7 +31,6 @@ export default class Quiz extends Component {
 	async newRound() {
 		const quizCode = this.props.match.params.quizCode;
 		const { buzzers, quiz } = this.state;
-		console.log('Buzzers: ', buzzers);
 		await fetch(`${baseApiUrl}/quizzes/${quizCode}/rounds`, {
 			method: 'POST',
 			body: JSON.stringify({})

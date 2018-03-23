@@ -5,10 +5,6 @@ import Quiz from './Quiz';
 import StartQuiz from './StartQuiz'
 import NotFound from './404';
 
-console.log('Base url: ', baseUrl);
-console.log('Base api : ', baseApiUrl);
-console.log('rendeeeer');
-
 export default class Main extends Component {
 	render() {
 		return (

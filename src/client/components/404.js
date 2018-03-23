@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
 
-console.log('Home file!');
-
 export default class NotFound extends Component {
 	constructor() {
 		super();

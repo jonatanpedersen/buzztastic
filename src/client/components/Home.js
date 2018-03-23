@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
 
-console.log('Home file!');
-
 export default class Home extends Component {
 	constructor() {
 		super();
@@ -11,8 +9,6 @@ export default class Home extends Component {
 	async createQuiz(event) {
 		event.preventDefault();
 		const quizInputName = this.state.quizInputName;
-
-		console.log('input name: ', quizInputName);
 
 		if (quizInputName.trim() === '') {
 			console.error('quiz name not found');
@@ -31,14 +27,12 @@ export default class Home extends Component {
 				.then(postResponse => postResponse.json())
 				.then((json) => json.quizId)
 				.catch(err => console.error(err));
-			console.log('Quiz id: ', quizId);
 			if (!quizId) {
 				return;
 			}
 			const quizInfo = await fetch(`${baseApiUrl}/quizzes/${quizId}`, { method: 'GET' })
 				.then(getResponse => getResponse.json())
 				.catch(err => console.error(err));
-			console.log('Quiz info: ', quizInfo);
 
 			const quizName = quizInfo.name;
 			const quizCode = quizInfo.code;
@@ -46,7 +40,6 @@ export default class Home extends Component {
 		}
 	}
 	render() {
-		console.log('Rendering Home!!!');
 		return (
 			<section class="section--home">
 				<div class="home">
