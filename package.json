@@ -9,7 +9,7 @@
     "tsc": "cross-env NODE_ENV=production tsc",
     "tsc-watch": "cross-env NODE_ENV=development tsc --watch",
     "start": "node --harmony_async_iteration --experimental-modules .",
-    "nodemon": "nodemon --harmony_async_iteration --experimental-modules",
+    "nodemon": "nodemon --watch server --harmony_async_iteration --experimental-modules",
     "test": "mocha --harmony_async_iteration",
     "webpack": "cross-env NODE_ENV=production parallel-webpack",
     "webpack-watch": "cross-env NODE_ENV=development parallel-webpack --watch --no-stats"
