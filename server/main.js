@@ -42,11 +42,11 @@ async function main() {
         ];
         const app = [
             static_1.dir('clients/app'),
-            router_1.def(pug_1.pugFile('./clients/app/index.pug'))
+            router_1.def(setBaseHref, pug_1.pugFile('./clients/app/index.pug'))
         ];
         const www = [
             static_1.dir('clients/www'),
-            router_1.def(pug_1.pugFile('./clients/www/index.pug'))
+            router_1.def(setBaseHref, pug_1.pugFile('./clients/www/index.pug'))
         ];
         const server = http_1.createServer(core_1.createRequestListener(core_1.tryCatch(null, router_1.env('NODE_ENV', 'production', router_1.host('api.qubu.io', ...api), router_1.host('app.qubu.io', ...app), router_1.host('qubu.io', ...www)), router_1.env('NODE_ENV', undefined, router_1.path('api', ...api), router_1.path('app', ...app), router_1.path('www', ...www))), router_1.def(core_1.setStatusCode(404))));
         const io = socketIO(server);
@@ -363,4 +363,9 @@ async function main() {
     }
 }
 exports.main = main;
+async function setBaseHref(context) {
+    const { router } = context;
+    const baseHref = `${router && router.path || ''}/`;
+    return core_1.updateContext(context, { baseHref });
+}
 //# sourceMappingURL=main.js.map
