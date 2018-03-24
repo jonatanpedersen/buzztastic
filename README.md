@@ -16,21 +16,23 @@ npm install
 npm run build
 ```
 
+Runs `tsc` and `webpack`.
+
 ## Start
 
 ``` bash
 npm start
 ```
 
-## Develop
+Runs `node`.
 
-Runs `tsc`, `webpack` and `nodemon`.
+## Develop
 
 ``` bash
 npm run develop
 ```
 
-Listens on [localhost port 1432](http://localhost:1432/).
+Runs `nodemon`, and `tsc` and `webpack` in watch modes. Listens on [localhost port 1432](http://localhost:1432/).
 
 ## Debug
 
@@ -44,6 +46,8 @@ export DEBUG_COLORS=1
 ``` bash
 npm test
 ```
+
+Runs `mocha`.
 
 ## API
 
