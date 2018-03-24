@@ -24,6 +24,41 @@ async function main() {
         const amqpUrl = process.env.CLOUDAMQP_URL || "amqp://localhost";
         const connection = await amqplib_1.connect(amqpUrl);
         const channel = await connection.createChannel();
+        await subscribe('quiz.created', handleEvent);
+        await subscribe('quiz.deleted', handleEvent);
+        await subscribe('quiz.team.created', handleEvent);
+        await subscribe('quiz.player.created', handleEvent);
+        await subscribe('quiz.player.updated', handleEvent);
+        await subscribe('quiz.player.deleted', handleEvent);
+        await subscribe('quiz.round.created', handleEvent);
+        await subscribe('quiz.round.buzz.created', handleEvent);
+        const api = [
+            router_1.post(json_1.jsonParseRequestBody),
+            router_1.put(json_1.jsonParseRequestBody),
+            core_1.tryCatch(null, router_1.path('stats$', getStats), router_1.path('quizzes$', router_1.get(getQuizzes), router_1.post(createQuiz)), router_1.path('quizzes', router_1.path(':quizIdOrCode', quizIdOrCode, router_1.path('players$', router_1.post(createQuizPlayer)), router_1.path('players/:playerId', playerId, router_1.put(updateQuizPlayer), router_1.del(deleteQuizPlayer)), router_1.path('teams$', router_1.post(createQuizTeam)), router_1.path('rounds$', router_1.post(createQuizRound)), router_1.path('rounds/current/buzzes', router_1.post(createQuizRoundBuzz))), router_1.path(':quizIdOrCode$', router_1.get(getQuiz), router_1.del(deleteQuiz)))),
+            cors_1.setAccessControlResponseHeaders,
+            json_1.setResponseContentTypeHeaderToApplicationJson,
+            json_1.jsonStringifyResponseBody
+        ];
+        const app = [
+            static_1.dir('clients/app'),
+            router_1.def(pug_1.pugFile('./clients/app/index.pug'))
+        ];
+        const www = [
+            static_1.dir('clients/www'),
+            router_1.def(pug_1.pugFile('./clients/www/index.pug'))
+        ];
+        const server = http_1.createServer(core_1.createRequestListener(core_1.tryCatch(null, router_1.env('NODE_ENV', 'production', router_1.host('api.qubu.io', ...api), router_1.host('app.qubu.io', ...app), router_1.host('qubu.io', ...www)), router_1.env('NODE_ENV', undefined, router_1.path('api', ...api), router_1.path('app', ...app), router_1.path('www', ...www))), router_1.def(core_1.setStatusCode(404))));
+        const io = socketIO(server);
+        const port = process.env.PORT || 1432;
+        server.listen(port, async () => {
+            console.info(`Listening on port ${port}`);
+        });
+        async function handleEvent(event) {
+            debug('event: %O', event);
+            await stats.updateOne({ metric: event.type }, { $inc: { count: 1 } }, { upsert: true });
+            await storeEvent(createEvent('stats.updated', { metric: event.type }));
+        }
         function createEventId() {
             debug('createEventId');
             return uuid.v4();
@@ -316,39 +351,10 @@ async function main() {
                 }
             });
         }
-        const api = [
-            router_1.post(json_1.jsonParseRequestBody),
-            router_1.put(json_1.jsonParseRequestBody),
-            core_1.tryCatch(null, router_1.path('stats$', getStats), router_1.path('quizzes$', router_1.get(getQuizzes), router_1.post(createQuiz)), router_1.path('quizzes', router_1.path(':quizIdOrCode', quizIdOrCode, router_1.path('players$', router_1.post(createQuizPlayer)), router_1.path('players/:playerId', playerId, router_1.put(updateQuizPlayer), router_1.del(deleteQuizPlayer)), router_1.path('teams$', router_1.post(createQuizTeam)), router_1.path('rounds$', router_1.post(createQuizRound)), router_1.path('rounds/current/buzzes', router_1.post(createQuizRoundBuzz))), router_1.path(':quizIdOrCode$', router_1.get(getQuiz), router_1.del(deleteQuiz))), router_1.def(core_1.setStatusCode(404))),
-            json_1.setResponseContentTypeHeaderToApplicationJson,
-            json_1.jsonStringifyResponseBody
-        ];
-        const app = [
-            static_1.dir('clients/app'),
-            router_1.def(pug_1.pugFile('./clients/app/index.pug'))
-        ];
-        const www = [
-            static_1.dir('clients/www'),
-            router_1.def(pug_1.pugFile('./clients/www/index.pug'))
-        ];
-        const server = http_1.createServer(core_1.createRequestListener(core_1.tryCatch(null, router_1.env('NODE_ENV', 'production', router_1.host('api.qubu.io', ...api), router_1.host('app.qubu.io', ...app), router_1.host('qubu.io', ...www)), router_1.env('NODE_ENV', undefined, router_1.path('api', ...api), router_1.path('app', ...app), router_1.path('www', ...www)), cors_1.setAccessControlResponseHeaders), router_1.def(core_1.setStatusCode(404))));
-        const io = socketIO(server);
-        const port = process.env.PORT || 1432;
-        server.listen(port, async () => {
-            console.info(`Listening on port ${port}`);
-        });
-        await subscribe('quiz.created', handleEvent);
-        await subscribe('quiz.deleted', handleEvent);
-        await subscribe('quiz.team.created', handleEvent);
-        await subscribe('quiz.player.created', handleEvent);
-        await subscribe('quiz.player.updated', handleEvent);
-        await subscribe('quiz.player.deleted', handleEvent);
-        await subscribe('quiz.round.created', handleEvent);
-        await subscribe('quiz.round.buzz.created', handleEvent);
-        async function handleEvent(event) {
-            debug('event: %O', event);
-            await stats.updateOne({ metric: event.type }, { $inc: { count: 1 } }, { upsert: true });
-            await storeEvent(createEvent('stats.updated', { metric: event.type }));
+        async function throwIfNotUpdated(doc) {
+            if (doc.modifiedCount === 0) {
+                throw new core_1.BadRequestHttpError('Not Updated!');
+            }
         }
     }
     catch (err) {
@@ -357,9 +363,4 @@ async function main() {
     }
 }
 exports.main = main;
-async function throwIfNotUpdated(doc) {
-    if (doc.modifiedCount === 0) {
-        throw new core_1.BadRequestHttpError('Not Updated!');
-    }
-}
 //# sourceMappingURL=main.js.map

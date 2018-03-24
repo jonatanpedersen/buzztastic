@@ -22,10 +22,109 @@ export async function main () {
 		const quizzes = db.collection('quizzes');
 		const events = db.collection('events');
 		const stats = db.collection('stats');
-
 		const amqpUrl = process.env.CLOUDAMQP_URL || "amqp://localhost";
 		const connection = await connect(amqpUrl);
 		const channel = await connection.createChannel();
+
+		await subscribe('quiz.created', handleEvent);
+		await subscribe('quiz.deleted', handleEvent);
+		await subscribe('quiz.team.created', handleEvent);
+		await subscribe('quiz.player.created', handleEvent);
+		await subscribe('quiz.player.updated', handleEvent);
+		await subscribe('quiz.player.deleted', handleEvent);
+		await subscribe('quiz.round.created', handleEvent);
+		await subscribe('quiz.round.buzz.created', handleEvent);
+
+		const api = [
+			post(jsonParseRequestBody),
+			put(jsonParseRequestBody),
+			tryCatch(
+				null,
+				path('stats$', getStats),
+				path('quizzes$',
+					get(getQuizzes),
+					post(createQuiz),
+				),
+				path('quizzes',
+					path(':quizIdOrCode',
+						quizIdOrCode,
+						path('players$',
+							post(createQuizPlayer)
+						),
+						path('players/:playerId',
+							playerId,
+							put(updateQuizPlayer),
+							del(deleteQuizPlayer)
+						),
+						path('teams$',
+							post(createQuizTeam)
+						),
+						path('rounds$',
+							post(createQuizRound)
+						),
+						path('rounds/current/buzzes',
+							post(createQuizRoundBuzz)
+						)
+					),
+					path(':quizIdOrCode$',
+						get(getQuiz),
+						del(deleteQuiz)
+					)
+				)
+			),
+			setAccessControlResponseHeaders,
+			setResponseContentTypeHeaderToApplicationJson,
+			jsonStringifyResponseBody
+		];
+
+		const app = [
+			dir('clients/app'),
+			def(pugFile('./clients/app/index.pug'))
+		];
+
+		const www = [
+			dir('clients/www'),
+			def(pugFile('./clients/www/index.pug'))
+		];
+
+		const server = createServer(
+			createRequestListener(
+				tryCatch(
+					null,
+					env('NODE_ENV', 'production',
+						host('api.qubu.io', ...api),
+						host('app.qubu.io', ...app),
+						host('qubu.io', ...www)
+					),
+					env('NODE_ENV', undefined,
+						path('api', ...api),
+						path('app', ...app),
+						path('www', ...www)
+					)
+				),
+				def(setStatusCode(404))
+			)
+		);
+
+		const io = socketIO(server);
+
+		const port = process.env.PORT || 1432;
+
+		server.listen(port, async () => {
+			console.info(`Listening on port ${port}`);
+		});
+
+		async function handleEvent (event : Event) {
+			debug('event: %O', event);
+
+			await stats.updateOne(
+				{ metric: event.type },
+				{ $inc: { count: 1 } },
+				{ upsert:true }
+			);
+
+			await storeEvent(createEvent('stats.updated', { metric: event.type }));
+		}
 
 		interface Event {
 			id : string
@@ -404,116 +503,14 @@ export async function main () {
 			});
 		}
 
-		const api = [
-			post(jsonParseRequestBody),
-			put(jsonParseRequestBody),
-			tryCatch(
-				null,
-				path('stats$', getStats),
-				path('quizzes$',
-					get(getQuizzes),
-					post(createQuiz),
-				),
-				path('quizzes',
-					path(':quizIdOrCode',
-						quizIdOrCode,
-						path('players$',
-							post(createQuizPlayer)
-						),
-						path('players/:playerId',
-							playerId,
-							put(updateQuizPlayer),
-							del(deleteQuizPlayer)
-						),
-						path('teams$',
-							post(createQuizTeam)
-						),
-						path('rounds$',
-							post(createQuizRound)
-						),
-						path('rounds/current/buzzes',
-							post(createQuizRoundBuzz)
-						)
-					),
-					path(':quizIdOrCode$',
-						get(getQuiz),
-						del(deleteQuiz)
-					)
-				),
-				def(setStatusCode(404))
-			),
-			setAccessControlResponseHeaders,
-			setResponseContentTypeHeaderToApplicationJson,
-			jsonStringifyResponseBody
-		];
-
-		const app = [
-			dir('clients/app'),
-			def(pugFile('./clients/app/index.pug'))
-		];
-		const www = [
-			dir('clients/www'),
-			def(pugFile('./clients/www/index.pug'))
-		];
-
-		const server = createServer(
-			createRequestListener(
-				tryCatch(
-					null,
-					env('NODE_ENV', 'production',
-						host('api.qubu.io', ...api),
-						host('app.qubu.io', ...app),
-						host('qubu.io', ...www)
-					),
-					env('NODE_ENV', undefined,
-						path('api', ...api),
-						path('app', ...app),
-						path('www', ...www)
-					)
-				),
-				def(setStatusCode(404))
-			)
-		);
-
-		const io = socketIO(server);
-
-		const port = process.env.PORT || 1432;
-
-		server.listen(port, async () => {
-			console.info(`Listening on port ${port}`);
-		});
-
-		await subscribe('quiz.created', handleEvent);
-		await subscribe('quiz.deleted', handleEvent);
-		await subscribe('quiz.team.created', handleEvent);
-		await subscribe('quiz.player.created', handleEvent);
-		await subscribe('quiz.player.updated', handleEvent);
-		await subscribe('quiz.player.deleted', handleEvent);
-		await subscribe('quiz.round.created', handleEvent);
-		await subscribe('quiz.round.buzz.created', handleEvent);
-
-		async function handleEvent (event : Event) {
-			debug('event: %O', event);
-
-			await stats.updateOne(
-				{ metric: event.type },
-				{ $inc: { count: 1 } },
-				{ upsert:true }
-			);
-
-			await storeEvent(createEvent('stats.updated', { metric: event.type }));
+		async function throwIfNotUpdated (doc) {
+			if (doc.modifiedCount === 0) {
+				throw new BadRequestHttpError('Not Updated!');
+			}
 		}
-	}
-
-	catch (err) {
+	} catch (err) {
 		console.error(err, err.stack);
 
 		process.exit(1);
-	}
-}
-
-async function throwIfNotUpdated (doc) {
-	if (doc.modifiedCount === 0) {
-		throw new BadRequestHttpError('Not Updated!');
 	}
 }
