@@ -442,6 +442,7 @@ export async function main () {
 				),
 				def(setStatusCode(404))
 			),
+			setAccessControlResponseHeaders,
 			setResponseContentTypeHeaderToApplicationJson,
 			jsonStringifyResponseBody
 		];
@@ -468,8 +469,7 @@ export async function main () {
 						path('api', ...api),
 						path('app', ...app),
 						path('www', ...www)
-					),
-					setAccessControlResponseHeaders
+					)
 				),
 				def(setStatusCode(404))
 			)
