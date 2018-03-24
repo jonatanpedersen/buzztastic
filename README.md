@@ -1,5 +1,7 @@
 # buzztastic
 
+![QUBU](buzz.png)
+
 Qubu - The Buzztastic Quiz Buzzer
 
 ## Install
