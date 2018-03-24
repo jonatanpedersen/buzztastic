@@ -22,6 +22,27 @@ Build and watch:
 npm run build-watch
 ```
 
+## Debug
+
+``` bash
+export DEBUG=qubu
+export DEBUG_COLORS=1
+```
+
+## Start
+
+``` bash
+npm start
+```
+
+Listens on [localhost port 1432](http://localhost.1432/).
+
+Build and watch:
+
+``` bash
+npm run build-watch
+```
+
 ## Test
 
 ``` bash
