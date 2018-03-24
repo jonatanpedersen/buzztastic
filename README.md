@@ -35,7 +35,7 @@ export DEBUG_COLORS=1
 npm start
 ```
 
-Listens on [localhost port 1432](http://localhost.1432/).
+Listens on [localhost port 1432](http://localhost:1432/).
 
 Build and watch:
 
