@@ -1,12 +1,7 @@
 const webpack = require('webpack');
 const path = require('path');
 
-module.exports = {
-	entry: ['./src/client/index.js'],
-	output: {
-		path: path.resolve('app'),
-		filename: 'index.js'
-	},
+const shared = {
 	module: {
 		rules: [
 			{ test: /\.js?$/, loader: 'babel-loader', exclude: /node_modules/ }
@@ -21,4 +16,20 @@ module.exports = {
 			'process.env.NODE_ENV': '"production"'
 		})
 	]
-}
+};
+
+module.exports = [{
+	...shared,
+	entry: ['./src/clients/app/index.js'],
+	output: {
+		path: path.resolve('clients/app'),
+		filename: 'index.js'
+	}
+}, {
+	...shared,
+	entry: ['./src/clients/www/index.js'],
+	output: {
+		path: path.resolve('clients/www'),
+		filename: 'index.js'
+	}
+}];

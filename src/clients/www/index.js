@@ -1,7 +1,6 @@
 import React from 'react'
 import { render } from 'react-dom'
 import { BrowserRouter } from 'react-router-dom'
-import ReactCSSTransitionGroup from 'react-addons-css-transition-group';
 
 class App extends React.Component {
 	constructor () {
@@ -31,13 +30,13 @@ class App extends React.Component {
 		fetch(`${base}/stats`, { method: 'GET' })
 			.then(response => response.json())
 			.then(stats => {
-				//this.setState({ stats });
+				this.setState({ stats });
 			});
 	}
 
 	render () {
 		const { events, stats } = this.state;
-		
+
 		return <div>
 			<img className="rotate" src="splash_3.png" alt="QuBu - The buzztastic quiz buzzer." title="QuBu" />
 			<Events events={events} />

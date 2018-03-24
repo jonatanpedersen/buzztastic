@@ -1,15 +1,16 @@
-import { createRequestListener, HttpStatusCodes, all, AsyncReducerFunction, lazy, HttpContext } from '@jambon/core';
+import { all, AsyncReducerFunction, BadRequestHttpError, createRequestListener, HttpContext, HttpStatusCodes, NotFoundHttpError, setStatusCode, tryCatch, updateContext } from '@jambon/core';
 import { jsonParseRequestBody, jsonStringifyResponseBody, setResponseContentTypeHeaderToApplicationJson } from '@jambon/json';
-import { get, post, put, del, host, path } from '@jambon/router';
+import { get, post, put, del, host, path, def, env } from '@jambon/router';
+import { setAccessControlResponseHeaders } from '@jambon/cors';
+import { pugFile } from '@jambon/pug';
+import { dir } from '@jambon/static';
 import { connect } from 'amqplib';
 import { MongoClient } from 'mongodb';
 import { createServer } from 'http';
 import * as socketIO from 'socket.io';
 import * as uuid from 'uuid';
 import * as shortid from 'shortid';
-import { dir } from './static';
-import { pug } from './pug';
-import  * as createDebug from 'debug';
+import * as createDebug from 'debug';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
@@ -88,27 +89,34 @@ export async function main () {
 					await handler(event);
 					channel.ack(message);
 				}
-		  });
+			});
+		}
+
+		function createQuizCode () {
+			var code = '';
+			const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+			for (let i = 0; i < 6; i++) {
+				code += chars.charAt(Math.floor(Math.random() * chars.length));
+			}
+
+			return code;
 		}
 
 		async function getStats (context) {
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: await stats.find({}).toArray()
 				}
-			}
+			});
 		}
 
 		async function getQuizzes (context) {
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: await quizzes.find({}).toArray()
 				}
-			}
+			});
 		}
 
 		async function createQuiz (context) {
@@ -126,14 +134,12 @@ export async function main () {
 
 			await storeEvent(createEvent('quiz.created', { quizId }));
 
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: { quizId },
 					statusCode: HttpStatusCodes.OK
 				}
-			};
+			});
 		}
 
 		async function quizIdOrCode (context) {
@@ -144,13 +150,11 @@ export async function main () {
 				throw new NotFoundHttpError('Quiz Not Found');
 			}
 
-			return {
-				...context,
+			return updateContext(context, {
 				locals: {
-					...context.locals,
 					quiz
 				}
-			}
+			});
 		}
 
 		async function createQuizPlayer (context) {
@@ -182,14 +186,12 @@ export async function main () {
 
 			await storeEvent(createEvent('quiz.player.created', { quizId, playerId }));
 
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: { quizId, playerId },
 					statusCode: HttpStatusCodes.OK
 				}
-			};
+			});
 		}
 
 		async function playerId (context) {
@@ -230,13 +232,11 @@ export async function main () {
 
 			await storeEvent(createEvent('quiz.player.updated', { quizId, playerId }));
 
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: { quizId, playerId }
 				}
-			};
+			});
 		}
 
 		async function deleteQuizPlayer (context) {
@@ -256,13 +256,11 @@ export async function main () {
 
 			await storeEvent(createEvent('quiz.player.deleted', { quizId, playerId }));
 
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: { quizId, playerId }
 				}
-			};
+			});
 		}
 
 		async function createQuizRound (context) {
@@ -286,14 +284,12 @@ export async function main () {
 
 			await storeEvent(createEvent('quiz.round.created', { quizId, roundId }));
 
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: { quizId, roundId },
 					statusCode: HttpStatusCodes.OK
 				}
-			};
+			});
 		}
 
 		async function createQuizRoundBuzz (context) {
@@ -347,26 +343,22 @@ export async function main () {
 
 			await storeEvent(createEvent('quiz.round.buzz.created', { quizId, roundId, playerId, teamId, buzzId }));
 
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: { quizId, roundId, buzzId },
 					statusCode: HttpStatusCodes.OK
 				}
-			};
+			});
 		}
 
 		async function getQuiz (context) {
 			const { quiz } = context.locals;
 
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: quiz
 				}
-			}
+			});
 		}
 
 		async function deleteQuiz (context) {
@@ -377,13 +369,11 @@ export async function main () {
 
 			await storeEvent(createEvent('quiz.deleted', { quizId }));
 
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: { quizId }
 				}
-			}
+			});
 		}
 
 		async function createQuizTeam (context) {
@@ -406,20 +396,19 @@ export async function main () {
 
 			await storeEvent(createEvent('quiz.team.created', { quizId, teamId }));
 
-			return {
-				...context,
+			return updateContext(context, {
 				response: {
-					...context.response,
 					body: { quizId, teamId },
 					statusCode: HttpStatusCodes.OK
 				}
-			};
+			});
 		}
 
-		const api = all(
+		const api = [
 			post(jsonParseRequestBody),
 			put(jsonParseRequestBody),
-			trycatch(
+			tryCatch(
+				null,
 				path('stats$', getStats),
 				path('quizzes$',
 					get(getQuizzes),
@@ -451,36 +440,36 @@ export async function main () {
 						del(deleteQuiz)
 					)
 				),
-				log,
-				def(setStatusCode(400))
+				def(setStatusCode(404))
 			),
 			setResponseContentTypeHeaderToApplicationJson,
 			jsonStringifyResponseBody
-		);
+		];
 
 		const app = [
-			dir('app'),
-			def(pug('./app/index.pug'))
+			dir('clients/app'),
+			def(pugFile('./clients/app/index.pug'))
 		];
 		const www = [
-			dir('www'),
-			def(pug('./www/index.pug'))
+			dir('clients/www'),
+			def(pugFile('./clients/www/index.pug'))
 		];
 
 		const server = createServer(
 			createRequestListener(
-				trycatch(
-					env('production',
-						host('api.qubu.io', api),
+				tryCatch(
+					null,
+					env('NODE_ENV', 'production',
+						host('api.qubu.io', ...api),
 						host('app.qubu.io', ...app),
 						host('qubu.io', ...www)
 					),
-					env(undefined,
-						path('api', api),
+					env('NODE_ENV', undefined,
+						path('api', ...api),
 						path('app', ...app),
 						path('www', ...www)
 					),
-					setCrossOrigin()
+					setAccessControlResponseHeaders
 				),
 				def(setStatusCode(404))
 			)
@@ -523,128 +512,8 @@ export async function main () {
 	}
 }
 
-function env (name : string, ...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
-	return async function env (context) {
-		if (process.env.NODE_ENV !== name) {
-			return context;
-		}
-
-		return all(...reducers)(context);
-	}
-}
-
-async function log (context) {
-	console.log(context);
-
-	return context;
-}
-
-function setStatusCode (statusCode) : AsyncReducerFunction {
-	return async function setStatusCode (context) {
-		return {
-			...context,
-			response: {
-				...context.response,
-				statusCode: statusCode
-			}
-		}
-	}
-}
-
-function setCrossOrigin () : AsyncReducerFunction {
-	return async function setCrossOrigin (context) {
-		const origin = context.request.headers['origin'] || '*';
-
-		return {
-			...context,
-			response: {
-				...context.response,
-				headers: { 
-					...context.response.headers,
-					'Access-Control-Allow-Origin': origin,
-					'Access-Control-Allow-Credentials': 'true',
-					'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE',
-					'Access-Control-Allow-Headers': '*',
-				}
-			}
-		}
-	}
-}
-
-function def (...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
-	return async function def (context) {
-		if (context.response !== undefined) {
-			return context;
-		}
-
-		return all(...reducers)(context);
-	}
-}
-
-async function emptyResponse (context) {
-	return  {
-		...context,
-		response: {}
-	}
-}
-
-function trycatch (...reducers : AsyncReducerFunction[]) : AsyncReducerFunction {
-	return async function trycatch (context) {
-		try {
-			return await all(...reducers)(context);
-		} catch (err) {
-			const { message, stack } = err;
-
-			return {
-				...context,
-				response: {
-					...context.response,
-					headers: {
-						...(context.response || {}) .headers,
-						'Content-Type': 'text/html'
-					},
-					body: new Buffer(JSON.stringify({message, stack})),
-					statusCode: err.code || 500
-				}
-			}
-		}
-	}
-}
-
-function createQuizCode () {
-	var code = '';
-	const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
-	for (let i = 0; i < 6; i++) {
-		code += chars.charAt(Math.floor(Math.random() * chars.length));
-	}
-
-	return code;
-}
-
-class HttpError extends Error {
-	code : number
-
-	constructor (code : number, message) {
-		super(message);
-		this.code = code;
-	}
-}
-
-class NotFoundHttpError extends HttpError {
-	constructor (message) {
-		super(404, message);
-	}
-}
-
-class BadRequestHttpError extends HttpError {
-	constructor (message) {
-		super(400, message);
-	}
-}
-
 async function throwIfNotUpdated (doc) {
 	if (doc.modifiedCount === 0) {
-		throw new BadRequestHttpError('Not Updated');
+		throw new BadRequestHttpError('Not Updated!');
 	}
 }
