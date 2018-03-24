@@ -16,31 +16,27 @@ npm install
 npm run build
 ```
 
-Build and watch:
-
-``` bash
-npm run build-watch
-```
-
-## Debug
-
-``` bash
-export DEBUG=qubu
-export DEBUG_COLORS=1
-```
-
 ## Start
 
 ``` bash
 npm start
 ```
 
-Listens on [localhost port 1432](http://localhost:1432/).
+## Develop
 
-Build and watch:
+Runs `tsc`, `webpack` and `nodemon`.
 
 ``` bash
-npm run build-watch
+npm run develop
+```
+
+Listens on [localhost port 1432](http://localhost:1432/).
+
+## Debug
+
+``` bash
+export DEBUG=qubu
+export DEBUG_COLORS=1
 ```
 
 ## Test

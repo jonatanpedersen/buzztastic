@@ -1,6 +1,5 @@
 import React from 'react'
 import { render } from 'react-dom'
-import { BrowserRouter } from 'react-router-dom'
 
 class App extends React.Component {
 	constructor () {
@@ -69,10 +68,4 @@ const Metric = props => {
 	return <div className="metric">{metric} {count}</div>;
 };
 
-
-render((
-	<BrowserRouter>
-		<App />
-	</BrowserRouter>
-), document.querySelector('.main'));
-
+render(<App />, document.querySelector('.main'));
