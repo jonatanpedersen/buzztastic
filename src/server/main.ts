@@ -84,7 +84,7 @@ export async function main () {
 
 		const www = [
 			dir('clients/www'),
-			path('$', setBaseHref, loadStats, pugFile('./clients/www/index.pug'))
+			def(path('$', setBaseHref, loadStats, pugFile('./clients/www/index.pug')))
 		];
 
 		const server = createServer(
