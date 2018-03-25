@@ -1,0 +1,4 @@
+/* TEAM */
+	Developer: Jonatan Pedersen
+	Contact: jp@jonatanpedersen.com
+	Twitter: @jonatanpedersen

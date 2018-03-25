@@ -14,8 +14,8 @@ class App extends React.Component {
 		const socket = io();
 
 		socket.on('stats.updated', event => {
-			const top = (Math.random() * 80) + 10;
-			const left = (Math.random() * 80) + 10;
+			const top = (Math.random() * 120) - 10;
+			const left = (Math.random() * 120) - 10;
 			const size = ['small', 'medium', 'large'][Math.ceil(Math.random() * 3) - 1];
 			this.setState({ events: [...this.state.events, { top, left, size, type: event.data.metric }] });
 			this.update();
@@ -29,7 +29,7 @@ class App extends React.Component {
 		fetch(`${base}/stats`, { method: 'GET' })
 			.then(response => response.json())
 			.then(stats => {
-				this.setState({ stats });
+				//this.setState({ stats });
 			});
 	}
 
@@ -37,7 +37,6 @@ class App extends React.Component {
 		const { events, stats } = this.state;
 
 		return <div>
-			<img className="rotate" src="splash_3.png" alt="QuBu - The buzztastic quiz buzzer." title="QuBu" />
 			<Events events={events} />
 			<Stats stats={stats} />
 		</div>;
@@ -68,4 +67,4 @@ const Metric = props => {
 	return <div className="metric">{metric} {count}</div>;
 };
 
-render(<App />, document.querySelector('.main'));
+render(<App />, document.querySelector('.jumbo'));

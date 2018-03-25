@@ -2,11 +2,15 @@ doctype html
 html
 	head
 		meta(charset="UTF-8")
+		meta(name="viewport" content="width=device-width, initial-scale=1.0")
 		base(href=`${router && router.path || ''}/`)
 		title QuBu - The buzztastic quiz buzzer.
+		link(href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet")
+		link(rel="author" href="humans.txt")
 		style.
-			html, .body, .main { height: 100%; margin: 0}
-			.main { display: flex; justify-content: center; align-items: center; }
+			html, .body { font-family: 'Source+Sans+Pro', sans-serif; margin: 0}
+			.splash-1 { width: 20vw;}
+			.splash { max-width: 50vw;}
 			.rotate { animation: rotation 2s infinite linear; }
 			.event { position: absolute; }
 			.event__image { position: relative }
@@ -44,7 +48,45 @@ html
 				50%  { opacity: 1; }
 				100% { opacity: 0; left: -150px }
 			}
+
+			.section { height: 100vh; display: flex; justify-content: center; align-items: center; }
+			.menu { margin: 0 }
+			.nav { display: flex; justify-content: space-between; align-items: center; }
+			.container { max-width: 1160px; margin: 0 auto; padding: 0 1rem; position: relative }
+			.jumbotron-section { background-color: #fff; color: #333; }
+			.stats-section { background-color: #eee; color: #333; }
+			.download-section { background-color: #fff; color: #333; }
+			.footer { padding: 1rem; background-color: #eee; color: #333; }
+			.header { padding: 2rem; background-color: rgba(255,255,255,.75); color: #333; z-index: 1; position: absolute; top: 0; left: 0; right: 0; }
+			.heading-1, .heading-2 { margin: 0; }
+			.jumbo { overflow: hidden; position: absolute; top: 0; bottom: 0; left: 0; right: 0 }
+			.button { border: none; padding: 1rem 2rem; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; }
+			.start-button { background-color: #4CAF50; color: white; }
+			.link {  text-decoration: none; }
 	body.body
-		main.main
+		header.header
+			.container
+				nav.nav
+					h1.heading-1 QUBU
+					menu.menu
+						a.button.start-button(href="https://app.qubu.io/") Start
+		main
+			section.section.jumbotron-section
+				.jumbo
+				.container
+					img.splash.rotate(src="splash_3.png" alt="QuBu - The buzztastic quiz buzzer." title="QuBu")
+			section.section.stats-section
+				.container
+					h2.heading-2 Stats
+			section.section.download-section
+				.container
+					h2.heading-2 Download
+		footer.footer
+			.container
+				nav.nav
+					h3 &copy; 2018 QUBU
+					menu
+						a.link(href="privacy-policy") Privacy Policy
+
 		script(src="/socket.io/socket.io.js")
 		script(src="index.js")
