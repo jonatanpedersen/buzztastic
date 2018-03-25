@@ -79,7 +79,7 @@ export async function main () {
 
 		const app = [
 			dir('clients/app'),
-			path('(.*)', setBaseHref, pugFile('./clients/app/index.pug'))
+			def(path('(.*)', setBaseHref, pugFile('./clients/app/index.pug')))
 		];
 
 		const www = [

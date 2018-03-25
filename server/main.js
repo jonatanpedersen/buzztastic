@@ -42,7 +42,7 @@ async function main() {
         ];
         const app = [
             static_1.dir('clients/app'),
-            router_1.path('(.*)', setBaseHref, pug_1.pugFile('./clients/app/index.pug'))
+            router_1.def(router_1.path('(.*)', setBaseHref, pug_1.pugFile('./clients/app/index.pug')))
         ];
         const www = [
             static_1.dir('clients/www'),
