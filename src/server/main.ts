@@ -523,7 +523,9 @@ export async function main () {
 
 async function setBaseHref (context) {
 	const { router } = context;
-	const baseHref = `${router && router.path || ''}/`;
+	const baseHref = router && router.path;
+
+	console.log(router);
 
 	return updateContext(context, { baseHref });
 }
