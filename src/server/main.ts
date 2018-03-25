@@ -84,7 +84,7 @@ export async function main () {
 
 		const www = [
 			dir('clients/www'),
-			def(setBaseHref, pugFile('./clients/www/index.pug'))
+			path('$', setBaseHref, loadStats, pugFile('./clients/www/index.pug'))
 		];
 
 		const server = createServer(
@@ -200,6 +200,12 @@ export async function main () {
 			}
 
 			return code;
+		}
+
+		async function loadStats (context) {
+			return updateContext(context, {
+				stats: await stats.find({}).toArray()
+			});
 		}
 
 		async function getStats (context) {

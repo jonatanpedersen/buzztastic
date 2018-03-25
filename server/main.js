@@ -46,7 +46,8 @@ async function main() {
         ];
         const www = [
             static_1.dir('clients/www'),
-            router_1.def(setBaseHref, pug_1.pugFile('./clients/www/index.pug'))
+            router_1.path('privacy', setBaseHref, pug_1.pugFile('./clients/www/index.pug')),
+            router_1.path('$', setBaseHref, loadStats, pug_1.pugFile('./clients/www/index.pug'))
         ];
         const server = http_1.createServer(core_1.createRequestListener(core_1.tryCatch(null, router_1.env('NODE_ENV', 'production', router_1.host('api.qubu.io', ...api), router_1.host('app.qubu.io', ...app), router_1.host('qubu.io', ...www)), router_1.env('NODE_ENV', undefined, router_1.path('api', ...api), router_1.path('app', ...app), router_1.path('www', ...www))), router_1.def(core_1.setStatusCode(404))));
         const io = socketIO(server);
@@ -115,6 +116,11 @@ async function main() {
                 code += chars.charAt(Math.floor(Math.random() * chars.length));
             }
             return code;
+        }
+        async function loadStats(context) {
+            return core_1.updateContext(context, {
+                stats: await stats.find({}).toArray()
+            });
         }
         async function getStats(context) {
             return core_1.updateContext(context, {

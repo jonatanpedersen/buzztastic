@@ -4,6 +4,7 @@ html
 		meta(charset='utf-8')
 		title Buzztastic!
 		base(href=baseHref)
+		meta(name="viewport" content="width=device-width, initial-scale=1.0")
 		link(href='animate.css', rel='stylesheet', type='text/css')
 		link(href='home.css', rel='stylesheet', type='text/css')
 		link(href='main.css', rel='stylesheet', type='text/css')
@@ -21,5 +22,3 @@ html
 			const baseApiUrl = baseUrl === '/app/' ? '/api' : 'https://api.qubu.io';
 		script(src='/socket.io/socket.io.js')
 		script(type="text/javascript" src="index.js")
-			//- const apiUrl = `${router && router.path || ''}/`;
-		script(src="/socket.io/socket.io.js")

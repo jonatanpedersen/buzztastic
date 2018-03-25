@@ -67,4 +67,4 @@ const Metric = props => {
 	return <div className="metric">{metric} {count}</div>;
 };
 
-render(<App />, document.querySelector('.jumbo'));
+render(<App />, document.querySelector('.jumbotron-section__background'));

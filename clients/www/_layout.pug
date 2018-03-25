@@ -1,41 +1,69 @@
 doctype html
 html
 	head
-		meta(charset="UTF-8")
-		meta(name="viewport" content="width=device-width, initial-scale=1.0")
-		base(href=`${router && router.path || ''}/`)
-		title QuBu - The buzztastic quiz buzzer.
-		link(href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet")
-		link(rel="author" href="humans.txt")
-		block styles
+		block head
+			meta(charset="UTF-8")
+			meta(name="viewport" content="width=device-width, initial-scale=1.0")
+			base(href=baseHref)
+			title QuBu - The buzztastic quiz buzzer.
+			link(href="https://fonts.googleapis.com/css?family=Source+Sans+Pro" rel="stylesheet")
+			link(rel="author" href="humans.txt")
 			style.
-				html, .body { font-family: 'Source+Sans+Pro', sans-serif; margin: 0}
-				.section { height: 100vh; display: flex; justify-content: center; align-items: center; }
+				html, .body { font-family: 'Source+Sans+Pro', sans-serif; margin: 0; }
+				.section { display: flex; justify-content: center; align-items: center; }
+				.link {  text-decoration: none; color: #333 }
+
 				.menu { margin: 0 }
+				.menu__link { margin-left: 1rem; }
+
 				.nav { display: flex; justify-content: space-between; align-items: center; }
 				.container { max-width: 1160px; margin: 0 auto; padding: 0 1rem; position: relative }
-				.jumbotron-section { background-color: #fff; color: #333; }
-				.stats-section { background-color: #eee; color: #333; }
-				.download-section { background-color: #fff; color: #333; }
-				.footer { padding: 1rem; background-color: #eee; color: #333; }
-				.header { padding: 2rem; background-color: rgba(255,255,255,.75); color: #333; z-index: 1; position: absolute; top: 0; left: 0; right: 0; }
 				.heading-1, .heading-2 { margin: 0; }
-				.jumbo { overflow: hidden; position: absolute; top: 0; bottom: 0; left: 0; right: 0 }
-				.button { border: none; padding: 1rem 2rem; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; }
-				.start-button { background-color: #4CAF50; color: white; }
-				.link {  text-decoration: none; }
+				.heading-2 { font-size: 3rem; text-transform: uppercase; text-align: center; margin: 2rem 0 }
+
+				.button { border: none; border-radius: .25rem; padding: 1rem 2rem; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; }
+				.button--large { font-size: 2rem; }
+				.get-started-button { background-color: #4CAF50; color: white; }
+
+				.red-dot { display: inline-block; background-color: #c00000; width: 1rem; height: 1rem; border-radius: .5rem; }
+
+				.footer { padding: 1rem; background-color: rgba(255,255,255,.75); color: #333; }
+				.header { padding: 1rem 0; background-color: rgba(255,255,255,.75); color: #333; z-index: 1; position: absolute; top: 0; left: 0; right: 0; }
+
+				.jumbotron-section { background-color: #fff; min-height: 100vh; }
+				.jumbotron-section__background { overflow: hidden; position: absolute; top: 0; bottom: 0; left: 0; right: 0 }
+
+				.jumbotron {
+					display: flex;
+					flex-direction: column;
+					justify-content: space-between;
+				}
+
+				.jumbotron__nav {
+					display: flex;
+					flex-direction: column;
+					justify-content: space-between;
+					align-items: center;
+					background-color: rgba(255,255,255,.75);
+					position: absolute;
+					bottom: 0;
+					left: 0;
+					right: 0;
+					padding: 1rem;
+				}
+
 	body.body
-		header.header
-			.container
-				nav.nav
-					h1.heading-1 QUBU
-					menu.menu
-						a.button.start-button(href="https://app.qubu.io/") Start
-		block main
-		footer.footer
-			.container
-				nav.nav
-					h3 &copy; 2018 QUBU
-					menu
-						a.link(href="privacy-policy") Privacy Policy
-		block scripts
+		block body
+			header.header
+				.container
+					nav.nav
+						h1.heading-1
+							span.red-dot
+							span  QUBU
+						menu.menu
+							a.button.get-started-button(href="https://app.qubu.io/") Get started
+			block main
+			footer.footer
+				.container
+					nav.nav
+						h3 &copy; 2018 QUBU
