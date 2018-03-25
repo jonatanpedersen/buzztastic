@@ -42,7 +42,7 @@ async function main() {
         ];
         const app = [
             static_1.dir('clients/app'),
-            router_1.def(setBaseHref, pug_1.pugFile('./clients/app/index.pug'))
+            router_1.path('(.*)', setBaseHref, pug_1.pugFile('./clients/app/index.pug'))
         ];
         const www = [
             static_1.dir('clients/www'),
@@ -371,7 +371,6 @@ exports.main = main;
 async function setBaseHref(context) {
     const { router } = context;
     const baseHref = router && router.path;
-    console.log(router);
     return core_1.updateContext(context, { baseHref });
 }
 //# sourceMappingURL=main.js.map

@@ -79,7 +79,7 @@ export async function main () {
 
 		const app = [
 			dir('clients/app'),
-			def(setBaseHref, pugFile('./clients/app/index.pug'))
+			path('(.*)', setBaseHref, pugFile('./clients/app/index.pug'))
 		];
 
 		const www = [
@@ -524,8 +524,6 @@ export async function main () {
 async function setBaseHref (context) {
 	const { router } = context;
 	const baseHref = router && router.path;
-
-	console.log(router);
 
 	return updateContext(context, { baseHref });
 }
