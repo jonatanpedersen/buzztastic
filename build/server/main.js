@@ -12,6 +12,10 @@ const http_1 = require("http");
 const socketIO = require("socket.io");
 const uuid = require("uuid");
 const createDebug = require("debug");
+const server_1 = require("react-dom/server");
+const React = require("react");
+const App_1 = require("../clients/www/App");
+const Html_1 = require("../clients/www/Html");
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 async function main() {
     try {
@@ -41,12 +45,12 @@ async function main() {
             json_1.jsonStringifyResponseBody
         ];
         const app = [
-            static_1.dir('clients/app'),
-            router_1.def(router_1.path('(.*)', setBaseHref, pug_1.pugFile('./clients/app/index.pug')))
+            static_1.dir('static/app'),
+            router_1.def(router_1.path('(.*)', setBaseHref, pug_1.pugFile('./static/app/index.pug')))
         ];
         const www = [
-            static_1.dir('clients/www'),
-            router_1.def(router_1.path('$', setBaseHref, loadStats, pug_1.pugFile('./clients/www/index.pug')))
+            static_1.dir('static/www'),
+            router_1.def(router_1.path('$', setBaseHref, loadStats, render))
         ];
         const server = http_1.createServer(core_1.createRequestListener(core_1.tryCatch(null, router_1.env('NODE_ENV', 'production', router_1.host('api.qubu.io', ...api), router_1.host('app.qubu.io', ...app), router_1.host('qubu.io', ...www)), router_1.env('NODE_ENV', undefined, router_1.path('api', ...api), router_1.path('app', ...app), router_1.path('www', ...www))), router_1.def(core_1.setStatusCode(404))));
         const io = socketIO(server);
@@ -372,5 +376,19 @@ async function setBaseHref(context) {
     const { router } = context;
     const baseHref = router && router.path;
     return core_1.updateContext(context, { baseHref });
+}
+async function render(context) {
+    const title = 'Server side Rendering with Styled Components';
+    const body = server_1.renderToString(React.createElement(App_1.App, { stats: context.stats }));
+    const { baseHref } = context;
+    return core_1.updateContext(context, {
+        response: {
+            body: Html_1.Html({
+                baseHref,
+                body,
+                title
+            })
+        }
+    });
 }
 //# sourceMappingURL=main.js.map

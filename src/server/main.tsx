@@ -11,6 +11,10 @@ import * as socketIO from 'socket.io';
 import * as uuid from 'uuid';
 import * as shortid from 'shortid';
 import * as createDebug from 'debug';
+import { renderToString } from 'react-dom/server';
+import * as React from 'react';
+import { App } from '../clients/www/App';
+import { Html } from '../clients/www/Html';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
@@ -78,13 +82,13 @@ export async function main () {
 		];
 
 		const app = [
-			dir('clients/app'),
-			def(path('(.*)', setBaseHref, pugFile('./clients/app/index.pug')))
+			dir('static/app'),
+			def(path('(.*)', setBaseHref, pugFile('./static/app/index.pug')))
 		];
 
 		const www = [
-			dir('clients/www'),
-			def(path('$', setBaseHref, loadStats, pugFile('./clients/www/index.pug')))
+			dir('static/www'),
+			def(path('$', setBaseHref, loadStats, render))
 		];
 
 		const server = createServer(
@@ -526,4 +530,20 @@ async function setBaseHref (context) {
 	const baseHref = router && router.path;
 
 	return updateContext(context, { baseHref });
+}
+
+async function render (context) {
+	const title = 'Server side Rendering with Styled Components';
+	const body = renderToString(<App stats={context.stats} />);
+	const { baseHref } = context;
+
+	return updateContext(context, {
+		response: {
+			body: Html({
+				baseHref,
+				body,
+				title
+			})
+		}
+	});
 }
