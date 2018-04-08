@@ -21,14 +21,27 @@ const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 export async function main () {
 	try {
 		const debug = createDebug('qubu');
-		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
-		const db = await MongoClient.connect(mongodbConnectionString);
+		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017,localhost:27018?replicaSet=mongo-repl'
+		const client = await MongoClient.connect(mongodbConnectionString);
+		const db = client.db('buzztastic');
 		const quizzes = db.collection('quizzes');
 		const events = db.collection('events');
 		const stats = db.collection('stats');
 		const amqpUrl = process.env.CLOUDAMQP_URL || "amqp://localhost";
 		const connection = await connect(amqpUrl);
 		const channel = await connection.createChannel();
+
+		const pipeline = [
+			{
+				$project: { documentKey: false }
+			}
+		];
+
+		const changeStream = db.collection('events').watch(pipeline);
+
+		changeStream.on('change', change => {
+			console.log(change);
+		});
 
 		await subscribe('quiz.created', handleEvent);
 		await subscribe('quiz.deleted', handleEvent);
@@ -474,7 +487,7 @@ export async function main () {
 			const { quiz } = context.locals;
 			const { quizId } = quiz;
 
-			await quizzes.removeOne({ quizId });
+			await quizzes.deleteOne({ quizId });
 
 			await storeEvent(createEvent('quiz.deleted', { quizId }));
 

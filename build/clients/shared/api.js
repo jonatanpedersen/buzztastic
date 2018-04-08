@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 class Api {
     constructor(fetch) {
-        this.fetch = fetch;
+        this.fetch = fetch || defaultFetch;
     }
     async getEvents() {
         return this.get('/events');
@@ -27,7 +27,7 @@ class Api {
     }
 }
 exports.Api = Api;
-async function fetch2(options) {
+async function defaultFetch(options) {
     const base = document.location.href.indexOf('qubu.io') > -1 ? 'https://api.qubu.io' : '/api';
     const { method, path, body } = options;
     const url = `${base}${path}`;

@@ -5,8 +5,8 @@ export type FetchFunction = (options: { method: string, path: string, body?: obj
 export class Api {
 	private fetch : FetchFunction;
 
-	constructor (fetch : FetchFunction) {
-		this.fetch = fetch;
+	constructor (fetch? : FetchFunction) {
+		this.fetch = fetch || defaultFetch;
 	}
 
 	async getEvents () : Promise<Event[]> {
@@ -39,7 +39,7 @@ export class Api {
 }
 
 
-async function fetch2 (options: { method: string, path: string, body?: object}) : Promise<any> {
+async function defaultFetch (options: { method: string, path: string, body?: object}) : Promise<any> {
 	const base = document.location.href.indexOf('qubu.io') > -1 ? 'https://api.qubu.io' : '/api';
 	const { method, path, body } = options;
 

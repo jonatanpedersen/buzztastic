@@ -26,7 +26,8 @@ class App extends React.Component {
         });
     }
     async update() {
-        const stats = await api_1.getStats();
+        const api = new api_1.Api();
+        const stats = await api.getStats();
         this.setState({ stats });
     }
     render() {

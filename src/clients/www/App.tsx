@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { getStats, Stat } from '../shared/api';
+import { Api } from '../shared/api';
+import { Event, Stat, Quiz } from '../../shared/types';
 
 interface AppState { events: any[], stats: Stat[]  }
 export class App extends React.Component<any, AppState> {
@@ -31,7 +32,8 @@ export class App extends React.Component<any, AppState> {
 	}
 
 	async update () {
-		const stats = await getStats();
+		const api = new Api();
+		const stats = await api.getStats();
 		this.setState({ stats });
 	}
 
