@@ -20,7 +20,7 @@ const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 async function main() {
     try {
         const debug = createDebug('qubu');
-        const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017,localhost:27018?replicaSet=mongo-repl';
+        const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
         const client = await mongodb_1.MongoClient.connect(mongodbConnectionString);
         const db = client.db('buzztastic');
         const quizzes = db.collection('quizzes');
@@ -29,15 +29,6 @@ async function main() {
         const amqpUrl = process.env.CLOUDAMQP_URL || "amqp://localhost";
         const connection = await amqplib_1.connect(amqpUrl);
         const channel = await connection.createChannel();
-        const pipeline = [
-            {
-                $project: { documentKey: false }
-            }
-        ];
-        const changeStream = db.collection('events').watch(pipeline);
-        changeStream.on('change', change => {
-            console.log(change);
-        });
         await subscribe('quiz.created', handleEvent);
         await subscribe('quiz.deleted', handleEvent);
         await subscribe('quiz.team.created', handleEvent);
@@ -388,7 +379,7 @@ async function setBaseHref(context) {
     return core_1.updateContext(context, { baseHref });
 }
 async function render(context) {
-    const title = 'Server side Rendering with Styled Components';
+    const title = 'QUBU - The Buzztastic Quiz Buzzer';
     const body = server_1.renderToString(React.createElement(App_1.App, { stats: context.stats }));
     const { baseHref } = context;
     return core_1.updateContext(context, {
