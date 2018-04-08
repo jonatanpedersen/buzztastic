@@ -22,8 +22,7 @@ export async function main () {
 	try {
 		const debug = createDebug('qubu');
 		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017/buzztastic'
-		const client = await MongoClient.connect(mongodbConnectionString);
-		const db = client.db('heroku_25qsg6gl');
+		const db = await MongoClient.connect(mongodbConnectionString);
 		const quizzes = db.collection('quizzes');
 		const events = db.collection('events');
 		const stats = db.collection('stats');

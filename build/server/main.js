@@ -20,9 +20,8 @@ const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 async function main() {
     try {
         const debug = createDebug('qubu');
-        const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
-        const client = await mongodb_1.MongoClient.connect(mongodbConnectionString);
-        const db = client.db('buzztastic');
+        const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017/buzztastic';
+        const db = await mongodb_1.MongoClient.connect(mongodbConnectionString);
         const quizzes = db.collection('quizzes');
         const events = db.collection('events');
         const stats = db.collection('stats');
