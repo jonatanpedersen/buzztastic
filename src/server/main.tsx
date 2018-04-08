@@ -11,14 +11,19 @@ import * as socketIO from 'socket.io';
 import * as uuid from 'uuid';
 import * as shortid from 'shortid';
 import * as createDebug from 'debug';
+import { renderToString } from 'react-dom/server';
+import * as React from 'react';
+import { App } from '../clients/www/App';
+import { Html } from '../clients/www/Html';
 
 const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
 export async function main () {
 	try {
 		const debug = createDebug('qubu');
-		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost/buzztastic';
-		const db = await MongoClient.connect(mongodbConnectionString);
+		const mongodbConnectionString = process.env.MONGODB_URI || 'mongodb://localhost:27017/buzztastic'
+		const client = await MongoClient.connect(mongodbConnectionString);
+		const db = client.db('buzztastic');
 		const quizzes = db.collection('quizzes');
 		const events = db.collection('events');
 		const stats = db.collection('stats');
@@ -78,13 +83,13 @@ export async function main () {
 		];
 
 		const app = [
-			dir('clients/app'),
-			def(path('(.*)', setBaseHref, pugFile('./clients/app/index.pug')))
+			dir('static/app'),
+			def(path('(.*)', setBaseHref, pugFile('./static/app/index.pug')))
 		];
 
 		const www = [
-			dir('clients/www'),
-			def(path('$', setBaseHref, loadStats, pugFile('./clients/www/index.pug')))
+			dir('static/www'),
+			def(path('$', setBaseHref, loadStats, render))
 		];
 
 		const server = createServer(
@@ -470,7 +475,7 @@ export async function main () {
 			const { quiz } = context.locals;
 			const { quizId } = quiz;
 
-			await quizzes.removeOne({ quizId });
+			await quizzes.deleteOne({ quizId });
 
 			await storeEvent(createEvent('quiz.deleted', { quizId }));
 
@@ -526,4 +531,20 @@ async function setBaseHref (context) {
 	const baseHref = router && router.path;
 
 	return updateContext(context, { baseHref });
+}
+
+async function render (context) {
+	const title = 'QUBU - The Buzztastic Quiz Buzzer';
+	const body = renderToString(<App stats={context.stats} />);
+	const { baseHref } = context;
+
+	return updateContext(context, {
+		response: {
+			body: Html({
+				baseHref,
+				body,
+				title
+			})
+		}
+	});
 }
