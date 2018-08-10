@@ -46,13 +46,13 @@ async function main() {
         ];
         const app = [
             static_1.dir('static/app'),
-            router_1.def(router_1.path('(.*)', setBaseHref, pug_1.pugFile('./static/app/index.pug')))
+            router_1.def(router_1.path('(.*)', pug_1.pugFile('./static/app/index.pug')))
         ];
         const www = [
             static_1.dir('static/www'),
-            router_1.def(router_1.path('$', setBaseHref, loadStats, render))
+            router_1.def(router_1.path('$', loadStats, render))
         ];
-        const server = http_1.createServer(core_1.createRequestListener(core_1.tryCatch(null, router_1.env('NODE_ENV', 'production', router_1.host('api.qubu.io', ...api), router_1.host('app.qubu.io', ...app), router_1.host('qubu.io', ...www)), router_1.env('NODE_ENV', undefined, router_1.path('api', ...api), router_1.path('app', ...app), router_1.path('www', ...www))), router_1.def(core_1.setStatusCode(404))));
+        const server = http_1.createServer(core_1.createRequestListener(core_1.tryCatch(null, router_1.env('NODE_ENV', 'production', router_1.host('api.qubu.io', setBaseHref('/'), ...api), router_1.host('app.qubu.io', setBaseHref('/'), ...app), router_1.host('qubu.io', setBaseHref('/'), ...www)), router_1.env('NODE_ENV', undefined, router_1.path('api', setBaseHref('/api/'), ...api), router_1.path('app', setBaseHref('/app/'), ...app), router_1.path('www', setBaseHref('/www/'), ...www))), router_1.def(core_1.setStatusCode(404))));
         const io = socketIO(server);
         const port = process.env.PORT || 1432;
         server.listen(port, async () => {
@@ -372,10 +372,10 @@ async function main() {
     }
 }
 exports.main = main;
-async function setBaseHref(context) {
-    const { router } = context;
-    const baseHref = router && router.path;
-    return core_1.updateContext(context, { baseHref });
+function setBaseHref(baseHref) {
+    return async function (context) {
+        return core_1.updateContext(context, { baseHref });
+    };
 }
 async function render(context) {
     const title = 'QUBU - The Buzztastic Quiz Buzzer';

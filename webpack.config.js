@@ -19,7 +19,7 @@ module.exports = [{
 	...shared,
 	entry: ['./src/clients/app/index.js'],
 	output: {
-		path: path.resolve('clients/app'),
+		path: path.resolve('static/app'),
 		filename: 'index.js'
 	}
 }, {

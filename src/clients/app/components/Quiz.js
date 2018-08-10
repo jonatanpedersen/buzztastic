@@ -1,77 +1,52 @@
-import React, { Component } from 'react'
-import { Link } from 'react-router-dom';
+import React, { Component } from 'react';
 
 export default class Quiz extends Component {
 	constructor(props) {
 		super(props);
-		this.state = { buzzers: [] };
-		this.newRound = this.newRound.bind(this);
+		this.state = {};
+		this.startQuiz = this.startQuiz.bind(this);
 	}
 
 	componentDidMount() {
-		const quizCode = this.props.match.params.quizCode;
-		fetch(`${baseApiUrl}/quizzes/${quizCode}`, { method: 'GET' })
+		const quizIdOrCode = this.props.match.params.quizIdOrCode;
+		fetch(`${baseApiUrl}/quizzes/${quizIdOrCode}`, { method: 'GET' })
 			.then((response) => response.json())
 			.then(quiz => {
 				return this.setState({ quiz });
 			});
-
-		const socket = io();
-		socket.on('quiz.round.buzz.created', buzzed => {
-			const { quiz, buzzers } = this.state;
-			const { playerId, teamId } = buzzed.data;
-			console.log('Quiz: ', quiz);
-			const team = quiz.teams.find(team => team.teamId === teamId);
-			const { name: teamName } = team;
-			const player = quiz.players.find(player => player.playerId = playerId);
-			const { name: playerName } = player;
-			this.setState({ buzzers: [...buzzers, { playerName, teamName }] });
-		});
 	}
 
-	async newRound() {
-		const quizCode = this.props.match.params.quizCode;
-		const { buzzers, quiz } = this.state;
-		await fetch(`${baseApiUrl}/quizzes/${quizCode}/rounds`, {
+	startQuiz(event) {
+		const quizCode = document.getElementById('quizCode').value;
+
+		const quizRound = fetch(`${baseApiUrl}/quizzes/${quizCode}/rounds`, {
 			method: 'POST',
 			body: JSON.stringify({})
-		});
-		fetch(`${baseApiUrl}/quizzes/${quizCode}`, { method: 'GET' })
-			.then(response => response.json())
-			.then(quiz => {
-				this.setState({
-					quiz: quiz,
-					buzzers: []
-				});
-			}).catch((err) => console.error(err));
+		})
+			.then((response) => response.json())
+			.then(rounds => this.props.history.push(`${baseUrl}quiz/${quizCode}`))
+			.catch(err => console.error(err));
 	}
 
 	render() {
-		const { quiz, buzzers } = this.state;
-		const quizCode = this.props.match.params.quizCode;
-		const numberOfRounds = quiz && quiz.rounds ? quiz.rounds.length : 0;
+		const { state } = this;
+		const { quiz } = state;
+
+		if (quiz === null || quiz === undefined) {
+			return null;
+		}
+
+		const { code, name } = quiz;
 
 		return (
-			<section className="section--quiz">
-				<div>
-					<div className="quiz-info">
-						<h1>Quiz code: {quizCode}</h1>
-						<label id="rounds" className="round-count" >Round: {numberOfRounds}</label>
-					</div>
-					<div className="buzzers">
-						<ul className="buzzer-list ">
-							{buzzers.map(buzzer =>
-								<li className="buzzer-list__item animated bounceIn">
-									<span className="buzzer__team">{buzzer.playerName}</span>
-									<span className="buzzer__team">{buzzer.teamName}</span>
-								</li>
-							)}
-						</ul>
-					</div>
-					<button className="button new-round-button" onClick={this.newRound}>Next round</button>
-					<Link className="button button--danger end-quiz-button" to={baseUrl} >End quiz</Link>
+			<section className="section--start-quiz">
+				<div className="start-quiz-placeholder">
+					<p className="quiz-info">Quiz name: {name}</p>
+					<p className="quiz-info">Quiz code: {code}</p>
+					<p className="center"><button className="button button--green" onClick={this.startQuiz}>Start quiz</button></p>
+					<input type="hidden" value={code} id="quizCode" />
 				</div>
 			</section>
 		)
-	};
+	}
 }

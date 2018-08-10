@@ -83,12 +83,12 @@ export async function main () {
 
 		const app = [
 			dir('static/app'),
-			def(path('(.*)', setBaseHref, pugFile('./static/app/index.pug')))
+			def(path('(.*)', pugFile('./static/app/index.pug')))
 		];
 
 		const www = [
 			dir('static/www'),
-			def(path('$', setBaseHref, loadStats, render))
+			def(path('$', loadStats, render))
 		];
 
 		const server = createServer(
@@ -96,14 +96,14 @@ export async function main () {
 				tryCatch(
 					null,
 					env('NODE_ENV', 'production',
-						host('api.qubu.io', ...api),
-						host('app.qubu.io', ...app),
-						host('qubu.io', ...www)
+						host('api.qubu.io', setBaseHref('/'), ...api),
+						host('app.qubu.io', setBaseHref('/'), ...app),
+						host('qubu.io', setBaseHref('/'), ...www)
 					),
 					env('NODE_ENV', undefined,
-						path('api', ...api),
-						path('app', ...app),
-						path('www', ...www)
+						path('api', setBaseHref('/api/'), ...api),
+						path('app', setBaseHref('/app/'), ...app),
+						path('www', setBaseHref('/www/'), ...www)
 					)
 				),
 				def(setStatusCode(404))
@@ -525,11 +525,10 @@ export async function main () {
 	}
 }
 
-async function setBaseHref (context) {
-	const { router } = context;
-	const baseHref = router && router.path;
-
-	return updateContext(context, { baseHref });
+function setBaseHref (baseHref) {
+	return async function (context) {
+		return updateContext(context, { baseHref });
+	}
 }
 
 async function render (context) {
